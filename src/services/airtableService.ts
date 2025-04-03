@@ -1,4 +1,3 @@
-
 import Airtable, { Attachment, Collaborator } from 'airtable';
 
 // Set your API key and base here
@@ -47,6 +46,8 @@ export interface Property {
   propertyType: string;
   listingType: string;
   imageUrl: string;
+  propertyAddress?: string;
+  propertyDescription?: string;
 }
 
 // Initialize Airtable
@@ -95,8 +96,7 @@ export const getProperties = async (): Promise<Property[]> => {
         videoContent: fields['Video Content'] as string || '',
         showingHistory: showingHistory || [],
         dateAndTime: fields['Date and Time'] as string || '',
-        // Additional fields for PropertyCard compatibility
-        city: 'Unknown City', // These values will be replaced with actual data if available
+        city: 'Unknown City',
         state: 'Unknown State',
         zipCode: 'Unknown',
         squareFeet: fields['Property Size'] as number || 0,
@@ -153,7 +153,6 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
       videoContent: fields['Video Content'] as string || '',
       showingHistory: showingHistory || [],
       dateAndTime: fields['Date and Time'] as string || '',
-      // Additional fields for PropertyCard compatibility
       city: 'Unknown City',
       state: 'Unknown State',
       zipCode: 'Unknown',
@@ -196,7 +195,50 @@ export const getPropertiesWithVideos = async (): Promise<Property[]> => {
           filename: video.filename || ''
         })),
         videoContent: fields['Video Content'] as string || '',
-        // Additional fields for PropertyCard compatibility
+        city: 'Unknown City',
+        state: 'Unknown State',
+        zipCode: 'Unknown',
+        squareFeet: fields['Property Size'] as number || 0,
+        propertyType: 'Unknown',
+        listingType: fields['Listing Status'] as string || '',
+        imageUrl: images && images.length > 0 ? images[0].url : 'https://placehold.co/600x400?text=No+Image'
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching properties with videos from Airtable:', error);
+    return [];
+  }
+};
+
+// Function to fetch featured videos for the video section
+export const fetchFeaturedVideos = async (): Promise<Property[]> => {
+  try {
+    const records = await base('Properties')
+      .select({
+        filterByFormula: 'NOT({Video File} = "")',
+        maxRecords: 4
+      })
+      .all();
+    
+    return records.map(record => {
+      const fields = record.fields;
+      
+      // Type casting to handle the Airtable attachment type
+      const images = fields['Property Images'] as readonly Attachment[] | undefined;
+      const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
+      
+      return {
+        id: record.id,
+        address: fields['Property Address'] as string || '',
+        propertyAddress: fields['Property Address'] as string || '',
+        propertyDescription: fields['Property Description'] as string || '',
+        bedrooms: fields['Number of Bedrooms'] as number || 0,
+        bathrooms: fields['Number of Bathrooms'] as number || 0,
+        price: fields['Listing Price'] as number || 0,
+        status: fields['Listing Status'] as string || '',
+        description: fields['Property Description'] as string || '',
+        videoFile: videoFile && videoFile.length > 0 ? videoFile[0].url : 'https://placehold.co/600x400?text=No+Video',
+        videoContent: fields['Video Content'] as string || '',
         city: 'Unknown City',
         state: 'Unknown State',
         zipCode: 'Unknown',

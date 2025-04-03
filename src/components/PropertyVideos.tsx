@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchFeaturedVideos } from '@/services/airtableService';
+import { fetchFeaturedVideos, Property } from '@/services/airtableService';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { 
@@ -22,34 +22,82 @@ const PropertyVideos = () => {
   });
 
   // Fallback data for development or when Airtable is not yet connected
-  const fallbackVideos = [
+  const fallbackVideos: Property[] = [
     {
       id: 'v1',
       propertyAddress: '789 Ocean Drive',
       videoFile: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04',
-      propertyDescription: 'Stunning oceanfront property with panoramic views'
+      propertyDescription: 'Stunning oceanfront property with panoramic views',
+      address: '789 Ocean Drive',
+      bedrooms: 0,
+      bathrooms: 0,
+      price: 0,
+      status: 'Active',
+      city: 'Unknown City',
+      state: 'Unknown State',
+      zipCode: 'Unknown',
+      squareFeet: 0,
+      propertyType: 'Unknown',
+      listingType: 'Unknown',
+      imageUrl: ''
     },
     {
       id: 'v2',
       propertyAddress: '456 Mountain View',
       videoFile: 'https://images.unsplash.com/photo-1472396961693-142e6e269027',
-      propertyDescription: 'Luxurious mountain retreat with private forest views'
+      propertyDescription: 'Luxurious mountain retreat with private forest views',
+      address: '456 Mountain View',
+      bedrooms: 0,
+      bathrooms: 0,
+      price: 0,
+      status: 'Active',
+      city: 'Unknown City',
+      state: 'Unknown State',
+      zipCode: 'Unknown',
+      squareFeet: 0,
+      propertyType: 'Unknown',
+      listingType: 'Unknown',
+      imageUrl: ''
     },
     {
       id: 'v3',
       propertyAddress: '123 Sunset Boulevard',
       videoFile: 'https://images.unsplash.com/photo-1500673922987-e212871fec22',
-      propertyDescription: 'Contemporary home in a peaceful neighborhood'
+      propertyDescription: 'Contemporary home in a peaceful neighborhood',
+      address: '123 Sunset Boulevard',
+      bedrooms: 0,
+      bathrooms: 0,
+      price: 0,
+      status: 'Active',
+      city: 'Unknown City',
+      state: 'Unknown State',
+      zipCode: 'Unknown',
+      squareFeet: 0,
+      propertyType: 'Unknown',
+      listingType: 'Unknown',
+      imageUrl: ''
     },
     {
       id: 'v4',
       propertyAddress: '321 River Road',
       videoFile: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-      propertyDescription: 'Cozy riverfront property with private dock'
+      propertyDescription: 'Cozy riverfront property with private dock',
+      address: '321 River Road',
+      bedrooms: 0,
+      bathrooms: 0,
+      price: 0,
+      status: 'Active',
+      city: 'Unknown City',
+      state: 'Unknown State',
+      zipCode: 'Unknown',
+      squareFeet: 0,
+      propertyType: 'Unknown',
+      listingType: 'Unknown',
+      imageUrl: ''
     }
   ];
 
-  const videosToDisplay = properties?.length ? properties : fallbackVideos;
+  const videosToDisplay = properties && properties.length > 0 ? properties : fallbackVideos;
 
   return (
     <section className="py-16 bg-gray-50">
@@ -80,8 +128,10 @@ const PropertyVideos = () => {
                     <div className="relative group">
                       <AspectRatio ratio={16/9}>
                         <img 
-                          src={property.videoFile} 
-                          alt={property.propertyAddress} 
+                          src={typeof property.videoFile === 'string' ? property.videoFile : 
+                               property.videoFile && property.videoFile.length > 0 ? property.videoFile[0].url : 
+                               'https://placehold.co/600x400?text=No+Video'} 
+                          alt={property.propertyAddress || property.address} 
                           className="object-cover rounded-t-lg w-full h-full"
                         />
                       </AspectRatio>
@@ -97,10 +147,10 @@ const PropertyVideos = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-lg truncate">
-                        {property.propertyAddress}
+                        {property.propertyAddress || property.address}
                       </h3>
                       <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                        {property.propertyDescription}
+                        {property.propertyDescription || property.description}
                       </p>
                     </div>
                   </CardContent>
