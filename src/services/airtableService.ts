@@ -1,8 +1,8 @@
 import Airtable, { Attachment, Collaborator } from 'airtable';
 
 // Set your API key and base here
-const apiKey = process.env.REACT_APP_AIRTABLE_API_KEY || '';
-const baseId = process.env.REACT_APP_AIRTABLE_BASE_ID || '';
+const apiKey = import.meta.env.VITE_AIRTABLE_API_KEY || 'your_airtable_api_key';
+const baseId = import.meta.env.VITE_AIRTABLE_BASE_ID || 'your_airtable_base_id';
 
 interface ShowingDate {
   date: string;
@@ -237,7 +237,7 @@ export const fetchFeaturedVideos = async (): Promise<Property[]> => {
         price: fields['Listing Price'] as number || 0,
         status: fields['Listing Status'] as string || '',
         description: fields['Property Description'] as string || '',
-        videoFile: videoFile && videoFile.length > 0 ? videoFile[0].url : 'https://placehold.co/600x400?text=No+Video',
+        videoFile: videoFile || [],
         videoContent: fields['Video Content'] as string || '',
         city: 'Unknown City',
         state: 'Unknown State',

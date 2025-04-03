@@ -26,7 +26,7 @@ const PropertyVideos = () => {
     {
       id: 'v1',
       propertyAddress: '789 Ocean Drive',
-      videoFile: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04',
+      videoFile: [],
       propertyDescription: 'Stunning oceanfront property with panoramic views',
       address: '789 Ocean Drive',
       bedrooms: 0,
@@ -44,7 +44,7 @@ const PropertyVideos = () => {
     {
       id: 'v2',
       propertyAddress: '456 Mountain View',
-      videoFile: 'https://images.unsplash.com/photo-1472396961693-142e6e269027',
+      videoFile: [],
       propertyDescription: 'Luxurious mountain retreat with private forest views',
       address: '456 Mountain View',
       bedrooms: 0,
@@ -62,7 +62,7 @@ const PropertyVideos = () => {
     {
       id: 'v3',
       propertyAddress: '123 Sunset Boulevard',
-      videoFile: 'https://images.unsplash.com/photo-1500673922987-e212871fec22',
+      videoFile: [],
       propertyDescription: 'Contemporary home in a peaceful neighborhood',
       address: '123 Sunset Boulevard',
       bedrooms: 0,
@@ -80,7 +80,7 @@ const PropertyVideos = () => {
     {
       id: 'v4',
       propertyAddress: '321 River Road',
-      videoFile: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+      videoFile: [],
       propertyDescription: 'Cozy riverfront property with private dock',
       address: '321 River Road',
       bedrooms: 0,
@@ -98,6 +98,14 @@ const PropertyVideos = () => {
   ];
 
   const videosToDisplay = properties && properties.length > 0 ? properties : fallbackVideos;
+
+  // Helper function to get the correct video thumbnail URL
+  const getVideoThumbnail = (property: Property) => {
+    if (Array.isArray(property.videoFile) && property.videoFile.length > 0) {
+      return property.videoFile[0].url;
+    }
+    return 'https://placehold.co/600x400?text=No+Video';
+  };
 
   return (
     <section className="py-16 bg-gray-50">
@@ -128,9 +136,7 @@ const PropertyVideos = () => {
                     <div className="relative group">
                       <AspectRatio ratio={16/9}>
                         <img 
-                          src={typeof property.videoFile === 'string' ? property.videoFile : 
-                               property.videoFile && property.videoFile.length > 0 ? property.videoFile[0].url : 
-                               'https://placehold.co/600x400?text=No+Video'} 
+                          src={getVideoThumbnail(property)} 
                           alt={property.propertyAddress || property.address} 
                           className="object-cover rounded-t-lg w-full h-full"
                         />
