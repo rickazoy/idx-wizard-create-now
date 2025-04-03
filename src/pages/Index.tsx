@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import SearchBar from '@/components/SearchBar';
 import PropertyCard, { Property } from '@/components/PropertyCard';
 import { ArrowRight, Building, Home, MapPin, Shield } from 'lucide-react';
+import AgentFeature from '@/components/AgentFeature';
+import PropertyVideos from '@/components/PropertyVideos';
 
 // Sample featured properties
 const featuredProperties: Property[] = [
@@ -81,6 +83,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Agent Feature Section */}
+      <AgentFeature />
 
       {/* Featured Properties Section */}
       <section className="py-16 bg-white">
@@ -189,6 +194,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Property Videos Section */}
+      <PropertyVideos />
 
       {/* CTA Section */}
       <section className="py-16 bg-realestate-blue text-white">
