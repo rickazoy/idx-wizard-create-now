@@ -1,3 +1,4 @@
+
 import Airtable, { Attachment, Collaborator } from 'airtable';
 
 // Set your API key and base here
@@ -237,7 +238,10 @@ export const fetchFeaturedVideos = async (): Promise<Property[]> => {
         price: fields['Listing Price'] as number || 0,
         status: fields['Listing Status'] as string || '',
         description: fields['Property Description'] as string || '',
-        videoFile: videoFile || [],
+        videoFile: videoFile ? videoFile.map(video => ({
+          url: video.url || '',
+          filename: video.filename || ''
+        })) : [],
         videoContent: fields['Video Content'] as string || '',
         city: 'Unknown City',
         state: 'Unknown State',
