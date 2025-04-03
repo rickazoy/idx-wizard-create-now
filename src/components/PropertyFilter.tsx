@@ -55,7 +55,7 @@ const PropertyFilter: React.FC<PropertyFilterProps> = ({ onFilterChange }) => {
   };
 
   const handleResetFilters = () => {
-    const resetFilters = {
+    const resetFilters: FilterValues = {
       priceRange: [0, 1000000],
       bedrooms: 'any',
       bathrooms: 'any',
