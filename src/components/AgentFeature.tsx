@@ -24,8 +24,9 @@ const AgentFeature = () => {
   return (
     <section className="bg-white py-16">
       <div className="container-custom">
-        <div className="flex flex-col lg:flex-row items-center gap-8">
-          <div className="flex-1 order-2 lg:order-1 max-w-3xl">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          {/* Left side: Agent information */}
+          <div className="flex-1 max-w-3xl">
             <h4 className="uppercase text-center lg:text-left text-sm tracking-wider text-gray-500 mb-3">ALWAYS THERE FOR YOU</h4>
             <h2 className="text-4xl md:text-5xl font-bold text-[#2374AB] text-center lg:text-left mb-6">{agentName}</h2>
             <p className="text-gray-700 mb-8 text-center lg:text-left">
@@ -35,13 +36,18 @@ const AgentFeature = () => {
               <Button asChild className="bg-[#2374AB] hover:bg-[#1a5a87] px-8">
                 <Link to="/contact">Contact</Link>
               </Button>
+              <Button asChild variant="outline" className="border-[#2374AB] text-[#2374AB] hover:bg-[#2374AB]/10">
+                <Link to="/team">Our Team</Link>
+              </Button>
             </div>
           </div>
-          <div className="flex-1 order-1 lg:order-2">
+          
+          {/* Right side: Agent photo */}
+          <div className="flex-1 flex justify-center lg:justify-end">
             <img 
               src={agentPhoto} 
               alt={`${agentName} - Real Estate Agent`} 
-              className="w-full h-auto"
+              className="w-auto h-auto max-h-[600px] object-contain rounded-none"
             />
           </div>
         </div>
