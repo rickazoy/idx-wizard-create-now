@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { getPrimaryAgent } from '@/services/airtableService';
+import { getPrimaryAgent } from '@/services/airtable/agentService';
+import { getApiKey, getBaseId } from '@/services/airtable/airtableCore';
 import { Loader2 } from 'lucide-react';
 
 // Create new component with NO caching
@@ -27,6 +28,8 @@ const AgentFeature = () => {
   const loadAgentData = async () => {
     try {
       setIsLoading(true);
+      
+      console.log(`Fetching agent data from Airtable [${new Date().toISOString()}]`);
       
       // Get direct from Airtable
       const agent = await getPrimaryAgent();
@@ -54,27 +57,27 @@ const AgentFeature = () => {
       } else {
         // Use fallback values if no agent data
         setAgentData({
-          name: 'Default Agent',
-          bio: 'A seasoned real estate agent specializing in luxury properties.',
-          photo: '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
+          name: localStorage.getItem('agent_name') || 'Default Agent',
+          bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury properties.',
+          photo: localStorage.getItem('agent_photo') || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
         });
         
         setLoadError("No agent found in Airtable");
         
         toast({
           title: "Agent Data Fallback",
-          description: "Using default agent data, no agent found in Airtable.",
+          description: "Using localStorage agent data, no agent found in Airtable.",
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error("Error loading agent data:", error);
       
-      // Set fallback values
+      // Set fallback values from localStorage instead of hardcoded values
       setAgentData({
-        name: 'Default Agent',
-        bio: 'A seasoned real estate agent specializing in luxury properties.',
-        photo: '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
+        name: localStorage.getItem('agent_name') || 'Default Agent',
+        bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury properties.',
+        photo: localStorage.getItem('agent_photo') || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
       });
       
       setLoadError(error instanceof Error ? error.message : "Unknown error");
@@ -82,7 +85,7 @@ const AgentFeature = () => {
       // Show error toast
       toast({
         title: "Error Loading Agent",
-        description: "Failed to load agent data from Airtable.",
+        description: "Failed to load agent data from Airtable. Using localStorage fallback.",
         variant: "destructive"
       });
     } finally {
@@ -173,7 +176,7 @@ const AgentFeature = () => {
                 </div>
               )}
               <div className="bg-amber-100 p-1 rounded mt-1 text-amber-800">
-                Data source: Airtable 'Agents' table
+                Data source: Airtable 'Agents' table ({AGENT_TABLE_NAME})
               </div>
               <div className="bg-blue-100 p-1 rounded mt-1 text-blue-800">
                 Airtable configured: {getApiKey() && getBaseId() ? 'Yes' : 'No'}
@@ -187,11 +190,3 @@ const AgentFeature = () => {
 };
 
 export default AgentFeature;
-
-function getApiKey() {
-  return localStorage.getItem('airtable_api_key') || '';
-}
-
-function getBaseId() {
-  return localStorage.getItem('airtable_base_id') || '';
-}
