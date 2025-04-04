@@ -1,7 +1,7 @@
 
 // This file is kept for backward compatibility
 // Import and re-export everything from the new modular structure
-export * from './airtable';
+export * from './airtable/index';
 
 // Add console warnings to help developers migrate
 const warnAboutDeprecation = () => {

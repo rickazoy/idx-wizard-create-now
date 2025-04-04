@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PropertyCard from '@/components/PropertyCard';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Grid, List } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { getProperties, Property } from '@/services/airtable';
+import { getProperties, Property } from '@/services/airtable/propertyService';
 import { useToast } from '@/hooks/use-toast';
 import PopularAreas from '@/components/PopularAreas';
 
@@ -20,14 +19,12 @@ const PropertyListings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'for-sale' | 'for-rent'>('all');
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
 
-  // Fetch all properties from Airtable
   const { data: properties, isLoading, error } = useQuery({
     queryKey: ['properties'],
     queryFn: getProperties,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Show error toast if API requests fail
   useEffect(() => {
     if (error) {
       toast({
@@ -38,13 +35,11 @@ const PropertyListings: React.FC = () => {
     }
   }, [error, toast]);
 
-  // Filter properties based on search term, tab, and filters
   const applyFilters = (filters: FilterValues) => {
     if (!properties) return;
     
     let result = [...properties];
 
-    // Apply search filter if present
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -55,7 +50,6 @@ const PropertyListings: React.FC = () => {
       );
     }
 
-    // Apply listing type filter for tabs
     if (activeTab === 'for-sale') {
       result = result.filter((property) => 
         property.listingType.toLowerCase().includes('sale')
@@ -66,26 +60,22 @@ const PropertyListings: React.FC = () => {
       );
     }
 
-    // Apply price filter - look at the 'Listing Price' field
     result = result.filter(
       (property) => 
         property.price >= filters.priceRange[0] && 
         property.price <= filters.priceRange[1]
     );
 
-    // Apply bedroom filter - look at the 'Number of Bedrooms' field
     if (filters.bedrooms !== 'any') {
       const minBedrooms = parseInt(filters.bedrooms);
       result = result.filter((property) => property.bedrooms >= minBedrooms);
     }
 
-    // Apply bathroom filter - look at the 'Number of Bathrooms' field
     if (filters.bathrooms !== 'any') {
       const minBathrooms = parseInt(filters.bathrooms);
       result = result.filter((property) => property.bathrooms >= minBathrooms);
     }
 
-    // Apply property type filter - look at the 'Property Type' field
     if (filters.propertyType !== 'any') {
       result = result.filter(
         (property) => property.propertyType.toLowerCase() === filters.propertyType.toLowerCase()
@@ -95,7 +85,6 @@ const PropertyListings: React.FC = () => {
     setFilteredProperties(result);
   };
 
-  // Apply default filters when data loads or tab/search changes
   useEffect(() => {
     if (properties) {
       applyFilters({
@@ -107,9 +96,7 @@ const PropertyListings: React.FC = () => {
     }
   }, [properties, searchTerm, activeTab]);
 
-  // Convert Property objects from Airtable to format expected by PropertyCard
   const formatPropertyForCard = (property: Property) => {
-    // Normalize listing type to ensure it matches the expected union type
     const normalizedListingType = property.listingType.toLowerCase().includes('sale') 
       ? 'For Sale' as const
       : 'For Rent' as const;

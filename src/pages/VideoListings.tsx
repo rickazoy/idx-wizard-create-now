@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchFeaturedVideos, Property } from '@/services/airtableService';
+import { fetchFeaturedVideos, Property } from '@/services/airtable/propertyService';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,6 @@ const VideoListings = () => {
     queryFn: fetchFeaturedVideos,
   });
 
-  // Fallback data for development or when Airtable is not yet connected
   const fallbackVideos: Property[] = [
     {
       id: 'v1',
@@ -95,7 +93,6 @@ const VideoListings = () => {
   const videosToDisplay = properties && properties.length > 0 ? properties : fallbackVideos;
   const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
 
-  // Helper function to get the correct video thumbnail URL
   const getVideoThumbnail = (property: Property) => {
     if (Array.isArray(property.videoFile) && property.videoFile.length > 0) {
       return property.videoFile[0].url;
