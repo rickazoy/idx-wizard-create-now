@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import SearchBar from '@/components/SearchBar';
@@ -13,6 +13,7 @@ import { getCityPropertyCounts } from '@/services/airtable/propertyService';
 import SetupAirtablePrompt from '@/components/SetupAirtablePrompt';
 import PopularAreas from '@/components/PopularAreas';
 import ApplicationWrapper from '@/components/ApplicationWrapper';
+import { useIdxProperties } from '@/hooks/useIdxProperties';
 
 // Sample featured properties as fallback
 const fallbackProperties: Property[] = [
@@ -71,11 +72,54 @@ const heroStyle = {
 };
 
 const Index = () => {
+  const [isIdxEnabled, setIsIdxEnabled] = useState(false);
+  
+  // Check if IDX is enabled
+  useEffect(() => {
+    const idxApiKey = localStorage.getItem('idx_api_key');
+    setIsIdxEnabled(!!idxApiKey && idxApiKey.length > 0);
+  }, []);
+
   // Fetch featured properties from Airtable
-  const { data: featuredProperties, isLoading, error } = useQuery({
+  const { 
+    data: airtableFeaturedProperties, 
+    isLoading: isLoadingAirtable, 
+    error: airtableError 
+  } = useQuery({
     queryKey: ['featuredProperties'],
     queryFn: fetchFeaturedProperties,
   });
+
+  // Fetch properties from IDX if enabled
+  const {
+    data: idxProperties,
+    isLoading: isLoadingIdx
+  } = useIdxProperties();
+
+  // Get featured IDX properties (limit to 3)
+  const featuredIdxProperties = idxProperties && isIdxEnabled 
+    ? idxProperties.slice(0, 3).map(prop => ({ 
+        ...prop, 
+        isIdxProperty: true 
+      }))
+    : [];
+
+  // Combine featured properties from both sources (up to 3 total)
+  const combinedFeaturedProperties = React.useMemo(() => {
+    const airtable = airtableFeaturedProperties || [];
+    
+    if (!isIdxEnabled || !featuredIdxProperties.length) {
+      return airtable.length > 0 ? airtable : fallbackProperties;
+    }
+    
+    // If we have IDX properties, blend them with Airtable properties (up to 3 total)
+    const combinedProps = [
+      ...featuredIdxProperties,
+      ...(airtable.filter(ap => !featuredIdxProperties.some(ip => ip.address === ap.address)))
+    ];
+    
+    return combinedProps.slice(0, 3);
+  }, [airtableFeaturedProperties, featuredIdxProperties, isIdxEnabled]);
 
   // Fetch property counts by city
   const { data: cityCounts = {} } = useQuery({
@@ -84,7 +128,7 @@ const Index = () => {
   });
 
   const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
-  const propertiesToDisplay = featuredProperties && featuredProperties.length > 0 ? featuredProperties : fallbackProperties;
+  const isLoading = isLoadingAirtable || (isIdxEnabled && isLoadingIdx);
 
   return (
     <ApplicationWrapper>
@@ -127,7 +171,11 @@ const Index = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
               <div>
                 <h2 className="text-3xl font-bold mb-2">Featured Properties</h2>
-                <p className="text-gray-600">Handpicked properties you might love</p>
+                <p className="text-gray-600">
+                  {isIdxEnabled 
+                    ? "Handpicked properties from Airtable and IDX" 
+                    : "Handpicked properties you might love"}
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 {!isAirtableConfigured && (
@@ -139,6 +187,11 @@ const Index = () => {
                       Configure Airtable
                     </Link>
                   </Button>
+                )}
+                {isIdxEnabled && (
+                  <span className="text-sm inline-flex items-center rounded-full px-3 py-1 font-medium bg-amber-100 text-amber-800">
+                    IDX Enabled
+                  </span>
                 )}
                 <Button asChild className="mt-4 md:mt-0">
                   <Link to="/listings">
@@ -154,13 +207,13 @@ const Index = () => {
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
                 <p className="mt-4 text-gray-600">Loading featured properties...</p>
               </div>
-            ) : error && isAirtableConfigured ? (
+            ) : airtableError && isAirtableConfigured ? (
               <div className="text-center py-8 text-red-500">
                 <p>Error loading properties. Please check your Airtable connection.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {propertiesToDisplay.map((property) => (
+                {combinedFeaturedProperties.map((property) => (
                   <PropertyCard key={property.id} property={property} />
                 ))}
               </div>

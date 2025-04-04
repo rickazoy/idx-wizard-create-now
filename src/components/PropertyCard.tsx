@@ -19,6 +19,8 @@ export interface Property {
   propertyType: string;
   listingType: 'For Sale' | 'For Rent';
   imageUrl: string;
+  description?: string;
+  isIdxProperty?: boolean;
 }
 
 interface PropertyCardProps {
@@ -53,6 +55,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
               {property.propertyType}
             </Badge>
           </div>
+          {property.isIdxProperty && (
+            <Badge variant="outline" className="absolute top-3 right-12 bg-amber-500/90 text-white border-amber-500 font-medium">
+              IDX
+            </Badge>
+          )}
           <button 
             className="absolute top-3 right-3 p-1.5 bg-white/80 hover:bg-white rounded-full text-gray-700 hover:text-red-500 transition-colors"
             aria-label="Favorite"

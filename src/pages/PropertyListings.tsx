@@ -6,12 +6,14 @@ import PropertyFilter, { FilterValues } from '@/components/PropertyFilter';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Grid, List } from 'lucide-react';
+import { MapPin, Grid, List, Database } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getProperties, Property } from '@/services/airtable/propertyService';
 import { useToast } from '@/hooks/use-toast';
 import PopularAreas from '@/components/PopularAreas';
 import ApplicationWrapper from '@/components/ApplicationWrapper';
+import { useIdxProperties } from '@/hooks/useIdxProperties';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const PropertyListings: React.FC = () => {
   const { toast } = useToast();
@@ -20,27 +22,66 @@ const PropertyListings: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'all' | 'for-sale' | 'for-rent'>('all');
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+  const [isIdxEnabled, setIsIdxEnabled] = useState(false);
 
-  const { data: properties, isLoading, error } = useQuery({
+  // Check if IDX is enabled
+  useEffect(() => {
+    const idxApiKey = localStorage.getItem('idx_api_key');
+    setIsIdxEnabled(!!idxApiKey && idxApiKey.length > 0);
+  }, []);
+
+  // Fetch properties from Airtable
+  const { 
+    data: airtableProperties, 
+    isLoading: isLoadingAirtable, 
+    error: airtableError 
+  } = useQuery({
     queryKey: ['properties'],
     queryFn: getProperties,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Fetch properties from IDX if enabled
+  const {
+    data: idxProperties,
+    isLoading: isLoadingIdx,
+    error: idxError
+  } = useIdxProperties();
+
+  const isLoading = isLoadingAirtable || (isIdxEnabled && isLoadingIdx);
+
   useEffect(() => {
-    if (error) {
+    if (airtableError) {
       toast({
         title: 'Error Loading Properties',
         description: 'Could not load properties from Airtable. Please check your connection settings.',
         variant: 'destructive',
       });
     }
-  }, [error, toast]);
+  }, [airtableError, toast]);
+
+  useEffect(() => {
+    if (idxError && isIdxEnabled) {
+      toast({
+        title: 'Error Loading IDX Properties',
+        description: 'Could not load properties from IDX. Please check your API key.',
+        variant: 'destructive',
+      });
+    }
+  }, [idxError, isIdxEnabled, toast]);
+
+  // Combine properties from both sources
+  const allProperties = React.useMemo(() => {
+    const airtable = airtableProperties || [];
+    const idx = idxProperties ? idxProperties.map(prop => ({ ...prop, isIdxProperty: true })) : [];
+    
+    return [...airtable, ...idx];
+  }, [airtableProperties, idxProperties]);
 
   const applyFilters = (filters: FilterValues) => {
-    if (!properties) return;
+    if (!allProperties.length) return;
     
-    let result = [...properties];
+    let result = [...allProperties];
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -88,7 +129,7 @@ const PropertyListings: React.FC = () => {
   };
 
   useEffect(() => {
-    if (properties) {
+    if (allProperties.length) {
       applyFilters({
         priceRange: [0, 30000000],
         bedrooms: 'any',
@@ -96,7 +137,7 @@ const PropertyListings: React.FC = () => {
         propertyType: 'any',
       });
     }
-  }, [properties, searchTerm, activeTab]);
+  }, [allProperties, searchTerm, activeTab]);
 
   const formatPropertyForCard = (property: Property) => {
     const normalizedListingType = property.listingType && property.listingType.toLowerCase().includes('sale') 
@@ -120,6 +161,15 @@ const PropertyListings: React.FC = () => {
           <div className="mb-6">
             <SearchBar compact />
           </div>
+
+          {isIdxEnabled && (
+            <Alert className="mb-6 bg-amber-50 border border-amber-200">
+              <Database className="h-4 w-4 text-amber-500" />
+              <AlertDescription className="text-amber-800">
+                IDX data integration is active. Displaying properties from both Airtable and IDX.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div className="md:col-span-3">
