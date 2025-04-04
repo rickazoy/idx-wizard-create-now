@@ -195,7 +195,7 @@ const Settings = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All Agents</SelectItem>
+                            <SelectItem value="all">All Agents</SelectItem>
                             {listingAgents.map((agent) => (
                               <SelectItem key={agent} value={agent}>
                                 {agent}
