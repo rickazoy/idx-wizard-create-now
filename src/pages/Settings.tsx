@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -33,7 +32,6 @@ import { AlertCircle, Info, Upload, User, Key } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 
-// Form validation schema for Airtable
 const airtableFormSchema = z.object({
   apiKey: z.string().min(1, { message: 'API Token is required' }),
   baseId: z.string().min(1, { message: 'Base ID is required' }),
@@ -41,12 +39,11 @@ const airtableFormSchema = z.object({
   isAdmin: z.boolean().default(false),
 });
 
-// Form validation schema for Agent
 const agentFormSchema = z.object({
   name: z.string().min(1, { message: 'Agent name is required' }),
   bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
   photoUrl: z.string().default(''),
-  idxApiKey: z.string().default(''), // Added IDX API Key field
+  idxApiKey: z.string().default(''),
 });
 
 type AirtableFormValues = z.infer<typeof airtableFormSchema>;
@@ -60,7 +57,6 @@ const Settings = () => {
   const [photoPreview, setPhotoPreview] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize Airtable form with default values
   const airtableForm = useForm<AirtableFormValues>({
     resolver: zodResolver(airtableFormSchema),
     defaultValues: {
@@ -71,7 +67,6 @@ const Settings = () => {
     },
   });
 
-  // Initialize Agent form with default values
   const agentForm = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
@@ -82,12 +77,10 @@ const Settings = () => {
     },
   });
 
-  // Set photo preview when the component loads
   useEffect(() => {
     setPhotoPreview(agentForm.watch('photoUrl'));
   }, [agentForm.watch('photoUrl')]);
 
-  // Fetch listing agents when form values change and user is admin
   useEffect(() => {
     const apiKey = airtableForm.watch('apiKey');
     const baseId = airtableForm.watch('baseId');
@@ -119,7 +112,6 @@ const Settings = () => {
   const onSubmitAirtable = async (values: AirtableFormValues) => {
     setIsLoading(true);
     try {
-      // Save config to localStorage
       localStorage.setItem('airtable_api_key', values.apiKey);
       localStorage.setItem('airtable_base_id', values.baseId);
       localStorage.setItem('is_admin', values.isAdmin.toString());
@@ -130,7 +122,6 @@ const Settings = () => {
         localStorage.removeItem('airtable_agent_filter');
       }
       
-      // Try to connect to Airtable with the new config
       await saveAirtableConfig(values.apiKey, values.baseId);
       
       toast({
@@ -152,19 +143,17 @@ const Settings = () => {
   const onSubmitAgent = async (values: AgentFormValues) => {
     setIsLoading(true);
     try {
-      // Save agent info to localStorage
       localStorage.setItem('agent_name', values.name);
       localStorage.setItem('agent_bio', values.bio);
       localStorage.setItem('agent_photo', values.photoUrl);
-      localStorage.setItem('idx_api_key', values.idxApiKey); // Save IDX API key to localStorage
+      localStorage.setItem('idx_api_key', values.idxApiKey);
       
-      // Also save to Airtable if we have a valid connection
       if (airtableForm.getValues('apiKey') && airtableForm.getValues('baseId')) {
         const success = await updateAgent({
           name: values.name,
           bio: values.bio,
           photo: values.photoUrl,
-          idx: values.idxApiKey // Include IDX API key in the update
+          idx: values.idxApiKey
         });
         
         if (success) {
@@ -196,19 +185,17 @@ const Settings = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Create a URL for the image
     const imageUrl = URL.createObjectURL(file);
     setPhotoPreview(imageUrl);
     
-    // Set the file URL in the form
     agentForm.setValue('photoUrl', imageUrl);
   };
-  
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -464,7 +451,6 @@ const Settings = () => {
                           )}
                         />
 
-                        {/* Add new IDX API Key field */}
                         <FormField
                           control={agentForm.control}
                           name="idxApiKey"
@@ -487,7 +473,7 @@ const Settings = () => {
                                 </FormDescription>
                                 <FormMessage />
                               </div>
-                              <Alert variant="outline" className="mt-2 bg-blue-50">
+                              <Alert className="mt-2 bg-blue-50">
                                 <Key className="h-4 w-4 text-blue-500" />
                                 <AlertTitle className="text-blue-700">IDX Integration</AlertTitle>
                                 <AlertDescription className="text-blue-600">
