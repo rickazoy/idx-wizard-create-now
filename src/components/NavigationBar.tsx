@@ -38,7 +38,7 @@ const NavigationBar: React.FC = () => {
                 src={logoUrl} 
                 alt="Company Logo" 
                 className="h-10 w-auto mr-2 object-contain"
-                style={{ maxWidth: '300px', maxHeight: '300px' }}
+                style={{ maxWidth: '500px', maxHeight: '500px' }}
               />
             ) : (
               <span className="font-semibold text-xl">Real Estate</span>
