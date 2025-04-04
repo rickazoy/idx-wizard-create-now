@@ -7,9 +7,12 @@ import PropertyCard, { Property } from '@/components/PropertyCard';
 import { ArrowRight, Building, Home, MapPin, Shield } from 'lucide-react';
 import PropertyVideos from '@/components/PropertyVideos';
 import AgentFeature from '@/components/AgentFeature';
+import { useQuery } from '@tanstack/react-query';
+import { fetchFeaturedProperties } from '@/services/airtable/propertyService';
+import SetupAirtablePrompt from '@/components/SetupAirtablePrompt';
 
-// Sample featured properties
-const featuredProperties: Property[] = [
+// Sample featured properties as fallback
+const fallbackProperties: Property[] = [
   {
     id: '1',
     address: '123 Main Street',
@@ -65,6 +68,15 @@ const heroStyle = {
 };
 
 const Index = () => {
+  // Fetch featured properties from Airtable
+  const { data: featuredProperties, isLoading, error } = useQuery({
+    queryKey: ['featuredProperties'],
+    queryFn: fetchFeaturedProperties,
+  });
+
+  const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
+  const propertiesToDisplay = featuredProperties && featuredProperties.length > 0 ? featuredProperties : fallbackProperties;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section with your uploaded image background */}
@@ -107,19 +119,42 @@ const Index = () => {
               <h2 className="text-3xl font-bold mb-2">Featured Properties</h2>
               <p className="text-gray-600">Handpicked properties you might love</p>
             </div>
-            <Button asChild className="mt-4 md:mt-0">
-              <Link to="/listings">
-                View All Properties
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="flex items-center gap-4">
+              {!isAirtableConfigured && (
+                <Button 
+                  variant="outline"
+                  asChild
+                >
+                  <Link to="/settings">
+                    Configure Airtable
+                  </Link>
+                </Button>
+              )}
+              <Button asChild className="mt-4 md:mt-0">
+                <Link to="/listings">
+                  View All Properties
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading featured properties...</p>
+            </div>
+          ) : error && isAirtableConfigured ? (
+            <div className="text-center py-8 text-red-500">
+              <p>Error loading properties. Please check your Airtable connection.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {propertiesToDisplay.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

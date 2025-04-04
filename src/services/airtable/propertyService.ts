@@ -1,4 +1,3 @@
-
 import { Attachment } from 'airtable';
 import { getBase, PROPERTY_TABLE_NAME, buildFilterFormula } from './airtableCore';
 
@@ -54,7 +53,6 @@ export interface Property {
   features?: string[];
 }
 
-// Function to get all properties
 export const getProperties = async (): Promise<Property[]> => {
   try {
     const base = getBase();
@@ -71,7 +69,6 @@ export const getProperties = async (): Promise<Property[]> => {
     return records.map(record => {
       const fields = record.fields;
       
-      // Type casting to handle the Airtable attachment type
       const images = fields['Property Images'] as readonly Attachment[] | undefined;
       const marketingMaterials = fields['Marketing materials'] as readonly Attachment[] | undefined;
       const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
@@ -128,7 +125,6 @@ export const getProperties = async (): Promise<Property[]> => {
   }
 };
 
-// Function to get property by ID
 export const getPropertyById = async (id: string): Promise<Property | null> => {
   try {
     const base = getBase();
@@ -137,7 +133,6 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
     const record = await base(PROPERTY_TABLE_NAME).find(id);
     const fields = record.fields;
     
-    // Type casting to handle the Airtable attachment type
     const images = fields['Property Images'] as readonly Attachment[] | undefined;
     const marketingMaterials = fields['Marketing materials'] as readonly Attachment[] | undefined;
     const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
@@ -193,7 +188,6 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
   }
 };
 
-// Function to get properties with videos
 export const getPropertiesWithVideos = async (): Promise<Property[]> => {
   try {
     const base = getBase();
@@ -210,7 +204,6 @@ export const getPropertiesWithVideos = async (): Promise<Property[]> => {
     return records.map(record => {
       const fields = record.fields;
       
-      // Type casting to handle the Airtable attachment type
       const images = fields['Property Images'] as readonly Attachment[] | undefined;
       const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
       
@@ -242,7 +235,6 @@ export const getPropertiesWithVideos = async (): Promise<Property[]> => {
   }
 };
 
-// Function to fetch featured videos for the video section
 export const fetchFeaturedVideos = async (): Promise<Property[]> => {
   try {
     const base = getBase();
@@ -260,7 +252,6 @@ export const fetchFeaturedVideos = async (): Promise<Property[]> => {
     return records.map(record => {
       const fields = record.fields;
       
-      // Type casting to handle the Airtable attachment type
       const images = fields['Property Images'] as readonly Attachment[] | undefined;
       const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
       
@@ -295,7 +286,6 @@ export const fetchFeaturedVideos = async (): Promise<Property[]> => {
   }
 };
 
-// Function to get properties for sale
 export const getPropertiesForSale = async (): Promise<Property[]> => {
   try {
     const base = getBase();
@@ -312,7 +302,6 @@ export const getPropertiesForSale = async (): Promise<Property[]> => {
     return records.map(record => {
       const fields = record.fields;
       
-      // Type casting to handle the Airtable attachment type
       const images = fields['Property Images'] as readonly Attachment[] | undefined;
       
       return {
@@ -335,6 +324,50 @@ export const getPropertiesForSale = async (): Promise<Property[]> => {
     });
   } catch (error) {
     console.error('Error fetching properties for sale from Airtable:', error);
+    return [];
+  }
+};
+
+export const fetchFeaturedProperties = async (): Promise<Property[]> => {
+  try {
+    const base = getBase();
+    if (!base) return [];
+    
+    const filterFormula = buildFilterFormula();
+    
+    const records = await base(PROPERTY_TABLE_NAME)
+      .select({
+        filterByFormula: filterFormula,
+        maxRecords: 3,
+        sort: [{ field: 'Listing Price', direction: 'desc' }]
+      })
+      .all();
+    
+    return records.map(record => {
+      const fields = record.fields;
+      
+      const images = fields['Property Images'] as readonly Attachment[] | undefined;
+      
+      return {
+        id: record.id,
+        address: fields['Property Address'] as string || '',
+        bedrooms: fields['Number of Bedrooms'] as number || 0,
+        bathrooms: fields['Number of Bathrooms'] as number || 0,
+        price: fields['Listing Price'] as number || 0,
+        status: fields['Listing Status'] as string || '',
+        description: fields['Property Description'] as string || '',
+        city: fields['City'] as string || 'Unknown City',
+        state: fields['State'] as string || 'Unknown State',
+        zipCode: fields['Zip Code'] as string || 'Unknown',
+        squareFeet: fields['Property Size'] as number || 0,
+        propertyType: fields['Property Type'] as string || 'Unknown',
+        listingType: fields['Listing Type'] as string || 'For Sale',
+        listingAgent: fields['Listing Agent'] as string || '',
+        imageUrl: images && images.length > 0 ? images[0].url : 'https://placehold.co/600x400?text=No+Image'
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching featured properties from Airtable:', error);
     return [];
   }
 };
