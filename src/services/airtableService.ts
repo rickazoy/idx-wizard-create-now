@@ -5,12 +5,12 @@ export * from './airtable';
 
 // Add console warnings to help developers migrate
 const warnAboutDeprecation = () => {
-  console.warn(
-    'Warning: Importing from airtableService.ts is deprecated. ' +
+  console.log(
+    'Info: Importing from airtableService.ts is deprecated. ' +
     'Please import directly from the airtable modules: ' +
     'import { getPrimaryAgent } from "@/services/airtable/agentService"'
   );
 };
 
-// Call the warning function
+// Call the warning function but make it less obtrusive (console.log instead of warn)
 warnAboutDeprecation();

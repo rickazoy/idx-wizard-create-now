@@ -38,14 +38,14 @@ const Team = () => {
           {agent ? (
             <Card className="overflow-hidden">
               <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/3">
+                <div className="md:w-2/5">
                   <img 
                     src={agent.photo || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'} 
                     alt={agent.name}
                     className="w-full h-full object-cover aspect-square"
                   />
                 </div>
-                <CardContent className="md:w-2/3 p-6">
+                <CardContent className="md:w-3/5 p-6">
                   <h2 className="text-2xl font-bold mb-2">{agent.name}</h2>
                   <p className="text-[#2374AB] font-medium mb-4">Lead Real Estate Agent</p>
                   

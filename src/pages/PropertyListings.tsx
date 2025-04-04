@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Grid, List } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { getProperties, getPropertiesForSale, Property } from '@/services/airtable';
+import { getProperties, Property } from '@/services/airtable';
 import { useToast } from '@/hooks/use-toast';
+import PopularAreas from '@/components/PopularAreas';
 
 const PropertyListings: React.FC = () => {
   const { toast } = useToast();
@@ -19,54 +20,29 @@ const PropertyListings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'for-sale' | 'for-rent'>('all');
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
 
-  // Fetch properties from Airtable
-  const { data: properties, isLoading: isLoadingAll, error: errorAll } = useQuery({
+  // Fetch all properties from Airtable
+  const { data: properties, isLoading, error } = useQuery({
     queryKey: ['properties'],
     queryFn: getProperties,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch properties for sale for the 'for-sale' tab
-  const { data: propertiesForSale, isLoading: isLoadingSale } = useQuery({
-    queryKey: ['propertiesForSale'],
-    queryFn: getPropertiesForSale,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: activeTab === 'for-sale',
-  });
-
   // Show error toast if API requests fail
   useEffect(() => {
-    if (errorAll) {
+    if (error) {
       toast({
         title: 'Error Loading Properties',
         description: 'Could not load properties from Airtable. Please check your connection settings.',
         variant: 'destructive',
       });
     }
-  }, [errorAll, toast]);
-
-  // Convert listingType string from Airtable to our expected format
-  const normalizeListingType = (type: string): 'For Sale' | 'For Rent' => {
-    const lowerType = type.toLowerCase();
-    if (lowerType.includes('sale')) return 'For Sale';
-    if (lowerType.includes('rent')) return 'For Rent';
-    return 'For Sale'; // Default
-  };
+  }, [error, toast]);
 
   // Filter properties based on search term, tab, and filters
   const applyFilters = (filters: FilterValues) => {
-    // Choose the right data source based on active tab
-    let dataSource: Property[] = [];
+    if (!properties) return;
     
-    if (activeTab === 'for-sale' && propertiesForSale) {
-      dataSource = propertiesForSale;
-    } else if (properties) {
-      dataSource = properties;
-    } else {
-      dataSource = [];
-    }
-
-    let result = [...dataSource];
+    let result = [...properties];
 
     // Apply search filter if present
     if (searchTerm) {
@@ -79,33 +55,37 @@ const PropertyListings: React.FC = () => {
       );
     }
 
-    // Apply tab filter for 'for-rent' (for-sale is already filtered at query level)
-    if (activeTab === 'for-rent') {
+    // Apply listing type filter for tabs
+    if (activeTab === 'for-sale') {
       result = result.filter((property) => 
-        normalizeListingType(property.listingType) === 'For Rent'
+        property.listingType.toLowerCase().includes('sale')
+      );
+    } else if (activeTab === 'for-rent') {
+      result = result.filter((property) => 
+        property.listingType.toLowerCase().includes('rent')
       );
     }
 
-    // Apply price filter
+    // Apply price filter - look at the 'Listing Price' field
     result = result.filter(
       (property) => 
         property.price >= filters.priceRange[0] && 
         property.price <= filters.priceRange[1]
     );
 
-    // Apply bedroom filter
+    // Apply bedroom filter - look at the 'Number of Bedrooms' field
     if (filters.bedrooms !== 'any') {
       const minBedrooms = parseInt(filters.bedrooms);
       result = result.filter((property) => property.bedrooms >= minBedrooms);
     }
 
-    // Apply bathroom filter
+    // Apply bathroom filter - look at the 'Number of Bathrooms' field
     if (filters.bathrooms !== 'any') {
       const minBathrooms = parseInt(filters.bathrooms);
       result = result.filter((property) => property.bathrooms >= minBathrooms);
     }
 
-    // Apply property type filter
+    // Apply property type filter - look at the 'Property Type' field
     if (filters.propertyType !== 'any') {
       result = result.filter(
         (property) => property.propertyType.toLowerCase() === filters.propertyType.toLowerCase()
@@ -115,27 +95,30 @@ const PropertyListings: React.FC = () => {
     setFilteredProperties(result);
   };
 
-  // Apply default filters when data loads or tab changes
+  // Apply default filters when data loads or tab/search changes
   useEffect(() => {
-    if (properties || propertiesForSale) {
+    if (properties) {
       applyFilters({
-        priceRange: [0, 10000000], // Higher default maximum
+        priceRange: [0, 10000000],
         bedrooms: 'any',
         bathrooms: 'any',
         propertyType: 'any',
       });
     }
-  }, [properties, propertiesForSale, searchTerm, activeTab]);
+  }, [properties, searchTerm, activeTab]);
 
   // Convert Property objects from Airtable to format expected by PropertyCard
   const formatPropertyForCard = (property: Property) => {
+    // Normalize listing type 
+    const normalizedListingType = property.listingType.toLowerCase().includes('sale') 
+      ? 'For Sale' 
+      : 'For Rent';
+      
     return {
       ...property,
-      listingType: normalizeListingType(property.listingType),
+      listingType: normalizedListingType,
     };
   };
-
-  const isLoading = isLoadingAll || isLoadingSale;
 
   return (
     <div className="container-custom py-8">
@@ -148,7 +131,14 @@ const PropertyListings: React.FC = () => {
           <SearchBar compact />
         </div>
 
-        <PropertyFilter onFilterChange={applyFilters} />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="md:col-span-3">
+            <PropertyFilter onFilterChange={applyFilters} />
+          </div>
+          <div className="md:col-span-1">
+            <PopularAreas />
+          </div>
+        </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <Tabs
