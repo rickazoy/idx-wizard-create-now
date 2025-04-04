@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchFeaturedVideos, Property } from '@/services/airtable/propertyService';
+import { fetchFeaturedCampaignVideos, Campaign } from '@/services/airtable/campaignService';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { 
@@ -15,92 +16,51 @@ import { Link } from 'react-router-dom';
 import { Video, Loader2 } from 'lucide-react';
 
 const PropertyVideos = () => {
-  const { data: properties, isLoading, error } = useQuery({
-    queryKey: ['featuredVideos'],
-    queryFn: fetchFeaturedVideos,
+  const { data: campaigns, isLoading, error } = useQuery({
+    queryKey: ['featuredCampaignVideos'],
+    queryFn: fetchFeaturedCampaignVideos,
   });
 
-  const fallbackVideos: Property[] = [
+  const fallbackVideos: Campaign[] = [
     {
       id: 'v1',
+      title: 'Luxury Ocean View Tour',
       propertyAddress: '789 Ocean Drive',
-      videoFile: [],
-      propertyDescription: 'Stunning oceanfront property with panoramic views',
-      address: '789 Ocean Drive',
-      bedrooms: 0,
-      bathrooms: 0,
-      price: 0,
-      status: 'Active',
-      city: 'Unknown City',
-      state: 'Unknown State',
-      zipCode: 'Unknown',
-      squareFeet: 0,
-      propertyType: 'Unknown',
-      listingType: 'Unknown',
-      imageUrl: ''
+      description: 'Stunning oceanfront property with panoramic views',
+      videoFile: []
     },
     {
       id: 'v2',
+      title: 'Mountain Retreat Experience',
       propertyAddress: '456 Mountain View',
-      videoFile: [],
-      propertyDescription: 'Luxurious mountain retreat with private forest views',
-      address: '456 Mountain View',
-      bedrooms: 0,
-      bathrooms: 0,
-      price: 0,
-      status: 'Active',
-      city: 'Unknown City',
-      state: 'Unknown State',
-      zipCode: 'Unknown',
-      squareFeet: 0,
-      propertyType: 'Unknown',
-      listingType: 'Unknown',
-      imageUrl: ''
+      description: 'Luxurious mountain retreat with private forest views',
+      videoFile: []
     },
     {
       id: 'v3',
+      title: 'Urban Living Tour',
       propertyAddress: '123 Sunset Boulevard',
-      videoFile: [],
-      propertyDescription: 'Contemporary home in a peaceful neighborhood',
-      address: '123 Sunset Boulevard',
-      bedrooms: 0,
-      bathrooms: 0,
-      price: 0,
-      status: 'Active',
-      city: 'Unknown City',
-      state: 'Unknown State',
-      zipCode: 'Unknown',
-      squareFeet: 0,
-      propertyType: 'Unknown',
-      listingType: 'Unknown',
-      imageUrl: ''
+      description: 'Contemporary home in a peaceful neighborhood',
+      videoFile: []
     },
     {
       id: 'v4',
+      title: 'Riverside Property Showcase',
       propertyAddress: '321 River Road',
-      videoFile: [],
-      propertyDescription: 'Cozy riverfront property with private dock',
-      address: '321 River Road',
-      bedrooms: 0,
-      bathrooms: 0,
-      price: 0,
-      status: 'Active',
-      city: 'Unknown City',
-      state: 'Unknown State',
-      zipCode: 'Unknown',
-      squareFeet: 0,
-      propertyType: 'Unknown',
-      listingType: 'Unknown',
-      imageUrl: ''
+      description: 'Cozy riverfront property with private dock',
+      videoFile: []
     }
   ];
 
-  const videosToDisplay = properties && properties.length > 0 ? properties : fallbackVideos;
+  const videosToDisplay = campaigns && campaigns.length > 0 ? campaigns : fallbackVideos;
   const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
 
-  const getVideoThumbnail = (property: Property) => {
-    if (Array.isArray(property.videoFile) && property.videoFile.length > 0) {
-      return property.videoFile[0].url;
+  const getVideoThumbnail = (campaign: Campaign) => {
+    if (campaign.thumbnailUrl) {
+      return campaign.thumbnailUrl;
+    }
+    if (Array.isArray(campaign.videoFile) && campaign.videoFile.length > 0) {
+      return campaign.videoFile[0].url;
     }
     return 'https://placehold.co/600x400?text=No+Video';
   };
@@ -159,15 +119,15 @@ const PropertyVideos = () => {
 
         <Carousel className="w-full">
           <CarouselContent>
-            {videosToDisplay.map((property) => (
-              <CarouselItem key={property.id} className="md:basis-1/2 lg:basis-1/3">
+            {videosToDisplay.map((campaign) => (
+              <CarouselItem key={campaign.id} className="md:basis-1/2 lg:basis-1/3">
                 <Card className="h-full">
                   <CardContent className="p-0">
                     <div className="relative group">
                       <AspectRatio ratio={16/9}>
                         <img 
-                          src={getVideoThumbnail(property)} 
-                          alt={property.propertyAddress || property.address} 
+                          src={getVideoThumbnail(campaign)} 
+                          alt={campaign.title || campaign.propertyAddress || ''} 
                           className="object-cover rounded-t-lg w-full h-full"
                         />
                       </AspectRatio>
@@ -183,14 +143,14 @@ const PropertyVideos = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-lg truncate">
-                        {property.propertyAddress || property.address}
+                        {campaign.title || campaign.propertyAddress || ''}
                       </h3>
                       <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                        {property.propertyDescription || property.description}
+                        {campaign.description || ''}
                       </p>
-                      {property.listingAgent && (
+                      {campaign.primaryRealtor && (
                         <p className="text-xs text-gray-500 mt-2">
-                          Agent: {property.listingAgent}
+                          Agent: {campaign.primaryRealtor}
                         </p>
                       )}
                     </div>

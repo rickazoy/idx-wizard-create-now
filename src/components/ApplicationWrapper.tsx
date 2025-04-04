@@ -1,6 +1,8 @@
 
 import React from 'react';
 import NavigationBar from './NavigationBar';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
 interface ApplicationWrapperProps {
   children: React.ReactNode;
@@ -8,12 +10,12 @@ interface ApplicationWrapperProps {
 
 const ApplicationWrapper: React.FC<ApplicationWrapperProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <NavigationBar />
-      <main className="flex-grow">
-        {children}
-      </main>
-    </div>
+      {children}
+      <Toaster />
+      <Sonner />
+    </>
   );
 };
 
