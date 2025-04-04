@@ -103,12 +103,28 @@ export const fetchListingAgents = async (apiKey?: string, baseId?: string): Prom
       filterByFormula: 'NOT({Listing Agent} = "")',
     }).all();
     
-    // Extract unique agent names
+    console.log('Listing Agent records:', records.map(r => r.get('Listing Agent')));
+    
+    // Extract agent names or IDs - handle both text fields and linked records
     const agents = new Set<string>();
     records.forEach(record => {
-      const agent = record.get('Listing Agent') as string;
-      if (agent) agents.add(agent);
+      const agent = record.get('Listing Agent');
+      if (agent) {
+        // Handle both string and array cases (linked records come as arrays)
+        if (typeof agent === 'string') {
+          agents.add(agent);
+        } else if (Array.isArray(agent)) {
+          // If it's an array of record IDs, we need to make another request to get agent names
+          // For now, we'll just store the IDs until we can fetch the actual names
+          agent.forEach(id => {
+            if (typeof id === 'string') agents.add(id);
+          });
+        }
+      }
     });
+    
+    // Log the found agents for debugging
+    console.log('Extracted listing agents:', Array.from(agents));
     
     return Array.from(agents).sort();
   } catch (error) {
@@ -126,8 +142,15 @@ const buildFilterFormula = (baseFilter?: string): string => {
   
   // Add agent filter if specified
   if (agentFilter && agentFilter !== 'all') {
-    const agentCondition = `{Listing Agent} = '${agentFilter}'`;
-    formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
+    // If the agent filter value looks like a record ID (starts with 'rec')
+    if (agentFilter.startsWith('rec')) {
+      const agentCondition = `FIND('${agentFilter}', ARRAYJOIN({Listing Agent})) > 0`;
+      formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
+    } else {
+      // Otherwise, treat it as a regular string value
+      const agentCondition = `{Listing Agent} = '${agentFilter}'`;
+      formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
+    }
   }
   
   return formula || '';

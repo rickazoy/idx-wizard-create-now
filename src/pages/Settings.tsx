@@ -229,6 +229,7 @@ const Settings = () => {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          disabled={listingAgents.length === 0}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -246,6 +247,8 @@ const Settings = () => {
                         </Select>
                         <FormDescription>
                           Filter property listings by a specific agent (uses the "Listing Agent" field)
+                          {listingAgents.length === 0 && form.watch('apiKey') && form.watch('baseId') && 
+                            " - No listing agents found, please ensure your Airtable has a 'Listing Agent' field"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
