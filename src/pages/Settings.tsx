@@ -26,13 +26,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableService';
-import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, Info } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
   apiKey: z.string().min(1, { message: 'API Token is required' }),
   baseId: z.string().min(1, { message: 'Base ID is required' }),
-  listingAgentFilter: z.string().optional(),
+  listingAgentFilter: z.string().default('all'),
   isAdmin: z.boolean().default(false),
 });
 
@@ -107,7 +108,7 @@ const Settings = () => {
       console.error('Error saving settings:', error);
       toast({
         title: 'Error',
-        description: 'Failed to connect to Airtable. Please check your credentials.',
+        description: 'Failed to connect to Airtable. Please check your credentials and ensure you have access to the table.',
         variant: 'destructive',
       });
     } finally {
@@ -128,6 +129,19 @@ const Settings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Alert className="mb-6">
+              <Info className="h-5 w-5" />
+              <AlertTitle>Important Setup Information</AlertTitle>
+              <AlertDescription>
+                <p className="text-sm mb-2">
+                  This application is configured to work with a table named <strong>"Property Management System Listings"</strong> in your Airtable base.
+                </p>
+                <p className="text-sm">
+                  Make sure your Airtable base contains this table name exactly as written.
+                </p>
+              </AlertDescription>
+            </Alert>
+            
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -139,7 +153,8 @@ const Settings = () => {
                   <ul className="text-sm text-amber-700 list-disc list-inside mt-1 space-y-1">
                     <li>Created a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="underline">Airtable account</a></li>
                     <li>Copied the correct Base ID (it should start with "app")</li>
-                    <li>Named your table "Properties" with all required fields</li>
+                    <li>A table named <strong>"Property Management System Listings"</strong> in your base</li>
+                    <li>The required fields set up in your table (Property Address, Listing Price, etc.)</li>
                   </ul>
                 </div>
               </div>
@@ -175,7 +190,7 @@ const Settings = () => {
                     <FormItem>
                       <FormLabel>API Token</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your Airtable API Token" {...field} />
+                        <Input placeholder="Your Airtable Personal Access Token" {...field} />
                       </FormControl>
                       <FormDescription>
                         Enter your Airtable Personal Access Token
@@ -195,7 +210,7 @@ const Settings = () => {
                         <Input placeholder="Your Airtable Base ID (starts with 'app')" {...field} />
                       </FormControl>
                       <FormDescription>
-                        The ID of your Airtable base containing property listings
+                        The ID of your Airtable base containing the "Property Management System Listings" table
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
