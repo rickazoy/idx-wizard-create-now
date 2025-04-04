@@ -109,10 +109,10 @@ const PropertyListings: React.FC = () => {
 
   // Convert Property objects from Airtable to format expected by PropertyCard
   const formatPropertyForCard = (property: Property) => {
-    // Normalize listing type 
+    // Normalize listing type to ensure it matches the expected union type
     const normalizedListingType = property.listingType.toLowerCase().includes('sale') 
-      ? 'For Sale' 
-      : 'For Rent';
+      ? 'For Sale' as const
+      : 'For Rent' as const;
       
     return {
       ...property,
