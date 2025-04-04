@@ -1,3 +1,4 @@
+
 import Airtable from 'airtable';
 
 // Table names in the Airtable base
@@ -19,7 +20,12 @@ export const getBase = () => {
     return null;
   }
   
-  return new Airtable({ apiKey }).base(baseId);
+  try {
+    return new Airtable({ apiKey }).base(baseId);
+  } catch (error) {
+    console.error('Error initializing Airtable base:', error);
+    return null;
+  }
 };
 
 // Test connection to Airtable and save config
@@ -29,7 +35,22 @@ export const saveAirtableConfig = async (apiKey: string, baseId: string): Promis
     const cleanBaseId = baseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
     
     const testBase = new Airtable({ apiKey }).base(cleanBaseId);
-    await testBase(PROPERTY_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
+    
+    // First try to connect to the property table
+    try {
+      await testBase(PROPERTY_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
+      console.log('Successfully connected to Property Management System Listings table');
+    } catch (err: any) {
+      if (err.statusCode === 404) {
+        console.error('Property Management System Listings table not found');
+      }
+      throw err;
+    }
+    
+    // Store the cleaned values
+    localStorage.setItem('airtable_api_key', apiKey);
+    localStorage.setItem('airtable_base_id', cleanBaseId);
+    
     return true;
   } catch (error) {
     console.error('Error connecting to Airtable:', error);

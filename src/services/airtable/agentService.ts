@@ -1,3 +1,4 @@
+
 import { Attachment } from 'airtable';
 import { getBase, AGENT_TABLE_NAME } from './airtableCore';
 
@@ -54,38 +55,45 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
     
     console.log(`Fetching agent data from Airtable (${new Date().toISOString()})`);
     
-    const records = await base(AGENT_TABLE_NAME).select({
-      maxRecords: 1,
-      sort: [{ field: 'Agent Name', direction: 'asc' }]
-    }).firstPage();
-    
-    if (records.length === 0) {
-      console.log('No agent records found in Airtable');
+    // Create Agents table if it doesn't exist
+    try {
+      // First try to get records from Agents table
+      const records = await base(AGENT_TABLE_NAME).select({
+        maxRecords: 1,
+        sort: [{ field: 'Agent Name', direction: 'asc' }]
+      }).firstPage();
+      
+      if (records.length === 0) {
+        console.log('No agent records found in Airtable');
+        return null;
+      }
+      
+      const agentRecord = records[0];
+      const fields = agentRecord.fields;
+
+      // Type casting to handle the Airtable attachment type
+      const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
+      const photoUrl = photo && photo.length > 0 ? photo[0].url : undefined;
+      
+      const agent: Agent = {
+        id: agentRecord.id,
+        name: fields['Agent Name'] as string || 'Default Agent',
+        bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
+        photo: photoUrl
+      };
+      
+      console.log('Agent data fetched successfully:', {
+        id: agent.id,
+        name: agent.name,
+        bioLength: agent.bio?.length || 0,
+        hasPhoto: !!agent.photo
+      });
+      
+      return agent;
+    } catch (error) {
+      console.error('Error fetching from Agents table, it may not exist yet:', error);
       return null;
     }
-    
-    const agentRecord = records[0];
-    const fields = agentRecord.fields;
-
-    // Type casting to handle the Airtable attachment type
-    const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
-    const photoUrl = photo && photo.length > 0 ? photo[0].url : undefined;
-    
-    const agent: Agent = {
-      id: agentRecord.id,
-      name: fields['Agent Name'] as string || 'Default Agent',
-      bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
-      photo: photoUrl
-    };
-    
-    console.log('Agent data fetched successfully:', {
-      id: agent.id,
-      name: agent.name,
-      bioLength: agent.bio?.length || 0,
-      hasPhoto: !!agent.photo
-    });
-    
-    return agent;
   } catch (error) {
     console.error('Error fetching agent from Airtable:', error);
     return null;
@@ -103,42 +111,35 @@ export const updateAgent = async (agent: Omit<Agent, 'id'>): Promise<boolean> =>
     
     console.log(`Attempting to save agent data to Airtable (${new Date().toISOString()})`, agent);
     
-    // First, check if there are any records in the agents table
-    const records = await base(AGENT_TABLE_NAME).select({
-      maxRecords: 1,
-    }).firstPage();
-    
-    // If agent has a photo URL, we need to format it for Airtable
-    // Note: This only works with URLs, not with file uploads
-    const fields: Record<string, any> = {
-      'Agent Name': agent.name,
-      'Agent Bio': agent.bio,
-    };
+    // Check if the Agents table exists by trying to create a record
+    try {
+      // Create fields for new agent
+      const fields: Record<string, any> = {
+        'Agent Name': agent.name,
+        'Agent Bio': agent.bio,
+      };
 
-    // Only include photo if it's a valid URL
-    if (agent.photo && agent.photo.startsWith('http')) {
-      fields['Agent Photo'] = [
-        {
-          url: agent.photo
-        }
-      ];
+      // Only include photo if it's a valid URL
+      if (agent.photo && agent.photo.startsWith('http')) {
+        fields['Agent Photo'] = [
+          {
+            url: agent.photo
+          }
+        ];
+      }
+      
+      // Try to create a new record in the Agents table
+      const result = await base(AGENT_TABLE_NAME).create(fields);
+      console.log('Created new agent record:', result.id);
+      return true;
+    } catch (error: any) {
+      // Check if the error is due to the table not existing
+      if (error.statusCode === 404) {
+        console.error('The Agents table does not exist in this Airtable base. Please create it first.');
+        return false;
+      }
+      throw error; // Re-throw for other errors
     }
-    
-    let result;
-    
-    if (records.length > 0) {
-      // Update existing record
-      const recordId = records[0].id;
-      result = await base(AGENT_TABLE_NAME).update(recordId, fields);
-      console.log('Updated existing agent record:', recordId);
-    } else {
-      // Create new record
-      result = await base(AGENT_TABLE_NAME).create(fields);
-      console.log('Created new agent record');
-    }
-    
-    console.log('Agent data saved successfully to Airtable');
-    return true;
   } catch (error) {
     console.error('Error saving agent data to Airtable:', error);
     return false;
