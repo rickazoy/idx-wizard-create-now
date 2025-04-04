@@ -67,6 +67,7 @@ const Settings = () => {
         try {
           const agents = await fetchListingAgents(apiKey, baseId);
           setListingAgents(agents);
+          console.log('Loaded listing agents:', agents);
         } catch (error) {
           console.error('Error fetching listing agents:', error);
           toast({
@@ -81,7 +82,7 @@ const Settings = () => {
     };
 
     loadListingAgents();
-  }, [form.watch('apiKey'), form.watch('baseId'), form.watch('isAdmin')]);
+  }, [form.watch('apiKey'), form.watch('baseId'), form.watch('isAdmin'), toast]);
 
   const onSubmit = async (values: SettingsFormValues) => {
     setIsLoading(true);
@@ -108,7 +109,7 @@ const Settings = () => {
       console.error('Error saving settings:', error);
       toast({
         title: 'Error',
-        description: 'Failed to connect to Airtable. Please check your credentials and ensure you have access to the table.',
+        description: 'Failed to connect to Airtable. Please check your credentials and ensure your table is named "Property Management System Listings".',
         variant: 'destructive',
       });
     } finally {
@@ -137,7 +138,7 @@ const Settings = () => {
                   This application is configured to work with a table named <strong>"Property Management System Listings"</strong> in your Airtable base.
                 </p>
                 <p className="text-sm">
-                  Make sure your Airtable base contains this table name exactly as written.
+                  Make sure your Airtable base contains this table name exactly as written, with a <strong>"Listing Agent"</strong> field for filtering.
                 </p>
               </AlertDescription>
             </Alert>
@@ -154,7 +155,8 @@ const Settings = () => {
                     <li>Created a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="underline">Airtable account</a></li>
                     <li>Copied the correct Base ID (it should start with "app")</li>
                     <li>A table named <strong>"Property Management System Listings"</strong> in your base</li>
-                    <li>The required fields set up in your table (Property Address, Listing Price, etc.)</li>
+                    <li>A <strong>"Listing Agent"</strong> field in your table (for filtering properties by agent)</li>
+                    <li>Other required fields set up in your table (Property Address, Listing Price, etc.)</li>
                   </ul>
                 </div>
               </div>
@@ -243,7 +245,7 @@ const Settings = () => {
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Filter property listings by a specific agent
+                          Filter property listings by a specific agent (uses the "Listing Agent" field)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

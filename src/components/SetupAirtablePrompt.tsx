@@ -35,7 +35,7 @@ const SetupAirtablePrompt: React.FC<SetupAirtablePromptProps> = ({ className }) 
           <ol className="list-decimal list-inside space-y-1">
             <li>Create a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Airtable account</a></li>
             <li>Copy your Base ID from the URL when viewing your base (starts with "app")</li>
-            <li>Ensure your table is named "Property Management System Listings" with required fields</li>
+            <li>Ensure your table is named "Property Management System Listings" with required fields including "Listing Agent"</li>
           </ol>
         </div>
       </CardContent>
