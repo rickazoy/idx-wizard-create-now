@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Menu, X } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,6 +13,7 @@ import {
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const cities = ['Miami', 'Coral Gables', 'Doral', 'Miami Beach', 'Sunny Isles'];
 
@@ -115,6 +116,46 @@ const NavigationBar: React.FC = () => {
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
+        </div>
+        
+        {/* Mobile Menu */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col gap-4 mt-8">
+                <Link to="/" className="px-2 py-1 text-lg font-semibold">Home</Link>
+                <div>
+                  <p className="px-2 py-1 text-lg font-semibold">Properties</p>
+                  <div className="ml-4 flex flex-col gap-2 mt-1">
+                    <Link to="/listings" className="px-2 py-1">All Properties</Link>
+                    {cities.map((city) => (
+                      <Link 
+                        key={city}
+                        to={`/listings?search=${encodeURIComponent(city)}`}
+                        className="px-2 py-1"
+                      >
+                        {city}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <Link to="/videos" className="px-2 py-1 text-lg font-semibold">Videos</Link>
+                <div>
+                  <p className="px-2 py-1 text-lg font-semibold">Contact</p>
+                  <div className="ml-4 flex flex-col gap-2 mt-1">
+                    <Link to="/contact" className="px-2 py-1">Contact Us</Link>
+                    <Link to="/team" className="px-2 py-1">Our Team</Link>
+                  </div>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
         
         {isAdmin && (

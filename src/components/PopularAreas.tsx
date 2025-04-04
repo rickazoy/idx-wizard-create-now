@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
 
-// Define the popular cities
+// Define the popular cities - these should match parts of addresses in Airtable
 const popularCities = [
+  { name: 'Miami', icon: <MapPin className="h-4 w-4" /> },
   { name: 'Doral', icon: <MapPin className="h-4 w-4" /> },
   { name: 'Coral Gables', icon: <MapPin className="h-4 w-4" /> },
-  { name: 'Miami', icon: <MapPin className="h-4 w-4" /> },
   { name: 'Miami Beach', icon: <MapPin className="h-4 w-4" /> },
   { name: 'Sunny Isles', icon: <MapPin className="h-4 w-4" /> },
 ];

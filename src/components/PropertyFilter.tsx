@@ -31,7 +31,7 @@ export interface FilterValues {
 const PropertyFilter: React.FC<PropertyFilterProps> = ({ onFilterChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>({
-    priceRange: [0, 1000000],
+    priceRange: [0, 30000000],
     bedrooms: 'any',
     bathrooms: 'any',
     propertyType: 'any',
@@ -56,7 +56,7 @@ const PropertyFilter: React.FC<PropertyFilterProps> = ({ onFilterChange }) => {
 
   const handleResetFilters = () => {
     const resetFilters: FilterValues = {
-      priceRange: [0, 1000000],
+      priceRange: [0, 30000000],
       bedrooms: 'any',
       bathrooms: 'any',
       propertyType: 'any',
@@ -97,8 +97,8 @@ const PropertyFilter: React.FC<PropertyFilterProps> = ({ onFilterChange }) => {
             <Slider
               defaultValue={filters.priceRange}
               min={0}
-              max={1000000}
-              step={10000}
+              max={30000000}
+              step={100000}
               onValueChange={handlePriceChange}
               className="mt-2"
             />
