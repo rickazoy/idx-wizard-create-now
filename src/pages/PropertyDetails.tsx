@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -87,6 +86,9 @@ const PropertyDetails: React.FC = () => {
   while (additionalImages.length < 3) {
     additionalImages.push(`https://placehold.co/600x400?text=No+Image+${additionalImages.length + 1}`);
   }
+
+  // Ensure features is an array
+  const propertyFeatures = Array.isArray(property.features) ? property.features : [];
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -252,9 +254,9 @@ const PropertyDetails: React.FC = () => {
                   
                   <TabsContent value="features" className="mt-0">
                     <h3 className="text-xl font-bold mb-4">Features & Amenities</h3>
-                    {property.features && property.features.length > 0 ? (
+                    {propertyFeatures.length > 0 ? (
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
-                        {property.features.map((feature, index) => (
+                        {propertyFeatures.map((feature, index) => (
                           <li key={index} className="flex items-start">
                             <div className="bg-realestate-teal/20 text-realestate-teal rounded-full p-1 mr-2 mt-0.5">
                               <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
