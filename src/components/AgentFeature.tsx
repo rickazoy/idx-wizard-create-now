@@ -2,56 +2,73 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
-// Force re-render by adding a key based on current time
+// Create new component with NO caching - completely rebuilt
 const AgentFeature = () => {
-  console.log("AgentFeature component loaded - TIMESTAMP VERSION:", new Date().toISOString());
+  const { toast } = useToast();
+  const timestamp = Date.now(); // Used to force browser to reload image
   
-  // Initialize state with direct localStorage values
-  const [agentName, setAgentName] = useState(() => 
-    localStorage.getItem('agent_name') || 'Adam Johnson'
-  );
+  // Don't use useState initial values that might get cached
+  const [agentData, setAgentData] = useState({
+    name: '',
+    bio: '',
+    photo: ''
+  });
   
-  const [agentBio, setAgentBio] = useState(() => 
-    localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury properties.'
-  );
-  
-  const [agentPhoto, setAgentPhoto] = useState(() => 
-    localStorage.getItem('agent_photo') || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
-  );
-
-  // Force refresh data on every render
-  useEffect(() => {
-    console.log("Forcing refresh of agent data...");
+  // Debug function to display what we're actually loading
+  const loadAgentData = () => {
+    // Get direct from localStorage, no caching
+    const name = localStorage.getItem('agent_name');
+    const bio = localStorage.getItem('agent_bio');
+    const photo = localStorage.getItem('agent_photo');
     
-    // Direct assignment from localStorage with no caching
-    const freshName = localStorage.getItem('agent_name');
-    const freshBio = localStorage.getItem('agent_bio');
-    const freshPhoto = localStorage.getItem('agent_photo');
-    
-    console.log("Fresh agent data from localStorage:", { 
-      freshName, 
-      freshBio: freshBio?.substring(0, 20) + "...", 
-      freshPhoto 
+    console.log(`AGENT DATA DEBUG [${new Date().toISOString()}]:`, { 
+      name, 
+      bio: bio?.substring(0, 30) + "...", 
+      photo,
+      timestamp
     });
+    
+    // Set values with defaults if needed
+    setAgentData({
+      name: name || 'Adam Johnson',
+      bio: bio || 'A seasoned real estate agent specializing in luxury properties.',
+      photo: photo || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
+    });
+    
+    // Show toast for debugging
+    toast({
+      title: "Agent Data Loaded",
+      description: `Loaded agent: ${name || 'Default agent'}`,
+    });
+  };
 
-    if (freshName) setAgentName(freshName);
-    if (freshBio) setAgentBio(freshBio);
-    if (freshPhoto) setAgentPhoto(freshPhoto);
+  // Load data when component mounts
+  useEffect(() => {
+    loadAgentData();
+    
+    // Create an interval to check for changes every 2 seconds
+    const intervalId = setInterval(() => {
+      loadAgentData();
+    }, 2000);
+    
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
-    <section className="bg-white py-16" key={Date.now()}>
+    <section className="bg-white py-16" key={timestamp}>
       <div className="container-custom">
         <div className="flex flex-col lg:flex-row items-center gap-8">
           {/* Left side: Agent information */}
           <div className="flex-1">
             <h4 className="uppercase text-center lg:text-left text-sm tracking-wider text-gray-500 mb-3">YOUR TRUSTED AGENT</h4>
             <h2 className="text-4xl md:text-5xl font-bold text-[#2374AB] text-center lg:text-left mb-6">
-              {agentName || 'Loading...'}
+              {agentData.name || 'Loading...'}
             </h2>
             <p className="text-gray-700 mb-8 text-center lg:text-left">
-              {agentBio || 'Loading agent bio...'}
+              {agentData.bio || 'Loading agent bio...'}
             </p>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <Button asChild className="bg-[#2374AB] hover:bg-[#1a5a87] px-8">
@@ -63,17 +80,20 @@ const AgentFeature = () => {
             </div>
           </div>
           
-          {/* Right side: Agent photo */}
+          {/* Right side: Agent photo with debug info displayed */}
           <div className="flex-shrink-0">
             <img 
-              src={`${agentPhoto}?t=${Date.now()}`} 
-              alt={`${agentName} - Real Estate Agent`} 
+              src={`${agentData.photo}?nocache=${timestamp}`} 
+              alt={`${agentData.name} - Real Estate Agent`} 
               className="w-[300px] h-[300px] object-cover rounded-lg shadow-md"
               onError={(e) => {
-                console.error("Image failed to load:", agentPhoto);
-                e.currentTarget.src = '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png';
+                console.error("Image failed to load:", agentData.photo);
+                e.currentTarget.src = '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png?nocache=' + timestamp;
               }}
             />
+            <div className="mt-2 text-xs text-gray-500 text-center">
+              Last updated: {new Date().toLocaleTimeString()}
+            </div>
           </div>
         </div>
       </div>
