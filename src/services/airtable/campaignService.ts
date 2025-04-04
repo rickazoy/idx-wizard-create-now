@@ -73,13 +73,24 @@ export const fetchCampaigns = async (): Promise<Campaign[]> => {
   }
 };
 
-// Add this function to match what VideoListings is importing
-export const fetchCampaignVideos = async (): Promise<Campaign[]> => {
-  // Reuse the fetchCampaigns function
-  return fetchCampaigns();
+// Modified to work with React Query context
+export const fetchFeaturedCampaigns = async () => {
+  try {
+    const campaigns = await fetchCampaigns();
+    
+    // Filter campaigns with video files
+    const campaignsWithVideo = campaigns.filter(campaign => campaign.videoFile);
+    
+    // Return limited number of campaigns (default 4)
+    return campaignsWithVideo.slice(0, 4);
+  } catch (error) {
+    console.error('Error fetching featured campaigns:', error);
+    return [];
+  }
 };
 
-export const fetchFeaturedCampaigns = async (limit = 4): Promise<Campaign[]> => {
+// Function that accepts a limit parameter separately for when it's called directly
+export const fetchFeaturedCampaignsWithLimit = async (limit = 4): Promise<Campaign[]> => {
   try {
     const campaigns = await fetchCampaigns();
     
@@ -94,8 +105,9 @@ export const fetchFeaturedCampaigns = async (limit = 4): Promise<Campaign[]> => 
   }
 };
 
-// Add this function to match what PropertyVideos is importing
-export const fetchFeaturedCampaignVideos = async (): Promise<Campaign[]> => {
-  // Reuse the fetchFeaturedCampaigns function
-  return fetchFeaturedCampaigns();
+// Add this function to match what VideoListings is importing
+export const fetchCampaignVideos = async () => {
+  // Reuse the fetchCampaigns function
+  return fetchCampaigns();
 };
+
