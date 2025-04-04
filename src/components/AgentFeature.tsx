@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { getPrimaryAgent } from '@/services/airtable/agentService';
-import { getApiKey, getBaseId } from '@/services/airtable/airtableCore';
+import { getApiKey, getBaseId, AGENT_TABLE_NAME } from '@/services/airtable/airtableCore';
 import { Loader2 } from 'lucide-react';
 
 // Create new component with NO caching
