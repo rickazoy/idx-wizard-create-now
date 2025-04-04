@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableService';
+import { fetchListingAgents, saveAirtableConfig, updateAgent } from '@/services/airtableService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Info, Upload, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -155,10 +155,32 @@ const Settings = () => {
       localStorage.setItem('agent_bio', values.bio);
       localStorage.setItem('agent_photo', values.photoUrl);
       
-      toast({
-        title: 'Agent Settings Saved',
-        description: 'Your agent information has been updated successfully.',
-      });
+      // Also save to Airtable if we have a valid connection
+      if (airtableForm.getValues('apiKey') && airtableForm.getValues('baseId')) {
+        const success = await updateAgent({
+          name: values.name,
+          bio: values.bio,
+          photo: values.photoUrl
+        });
+        
+        if (success) {
+          toast({
+            title: 'Agent Settings Saved',
+            description: 'Your agent information has been updated successfully in both localStorage and Airtable.',
+          });
+        } else {
+          toast({
+            title: 'Partially Saved',
+            description: 'Agent information was saved locally but failed to save to Airtable. Please check your Airtable connection.',
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Agent Settings Saved',
+          description: 'Your agent information has been updated successfully in localStorage. No Airtable connection configured.',
+        });
+      }
     } catch (error) {
       console.error('Error saving agent settings:', error);
       toast({

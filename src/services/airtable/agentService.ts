@@ -1,4 +1,3 @@
-
 import { Attachment } from 'airtable';
 import { getBase, AGENT_TABLE_NAME } from './airtableCore';
 
@@ -90,5 +89,58 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
   } catch (error) {
     console.error('Error fetching agent from Airtable:', error);
     return null;
+  }
+};
+
+// Function to save agent data to Airtable
+export const updateAgent = async (agent: Omit<Agent, 'id'>): Promise<boolean> => {
+  try {
+    const base = getBase();
+    if (!base) {
+      console.error('Could not connect to Airtable');
+      return false;
+    }
+    
+    console.log(`Attempting to save agent data to Airtable (${new Date().toISOString()})`, agent);
+    
+    // First, check if there are any records in the agents table
+    const records = await base(AGENT_TABLE_NAME).select({
+      maxRecords: 1,
+    }).firstPage();
+    
+    // If agent has a photo URL, we need to format it for Airtable
+    // Note: This only works with URLs, not with file uploads
+    const fields: Record<string, any> = {
+      'Agent Name': agent.name,
+      'Agent Bio': agent.bio,
+    };
+
+    // Only include photo if it's a valid URL
+    if (agent.photo && agent.photo.startsWith('http')) {
+      fields['Agent Photo'] = [
+        {
+          url: agent.photo
+        }
+      ];
+    }
+    
+    let result;
+    
+    if (records.length > 0) {
+      // Update existing record
+      const recordId = records[0].id;
+      result = await base(AGENT_TABLE_NAME).update(recordId, fields);
+      console.log('Updated existing agent record:', recordId);
+    } else {
+      // Create new record
+      result = await base(AGENT_TABLE_NAME).create(fields);
+      console.log('Created new agent record');
+    }
+    
+    console.log('Agent data saved successfully to Airtable');
+    return true;
+  } catch (error) {
+    console.error('Error saving agent data to Airtable:', error);
+    return false;
   }
 };
