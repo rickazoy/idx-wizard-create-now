@@ -6,21 +6,24 @@ import { Link } from 'react-router-dom';
 const AgentFeature = () => {
   console.log("AgentFeature component loaded - current version with photo update");
   
-  const [agentName, setAgentName] = useState('Adam Johnson');
-  const [agentBio, setAgentBio] = useState(
-    'Adam Johnson is a seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida. With a deep knowledge of the region\'s most exclusive neighborhoods, Adam offers a wealth of expertise in navigating the high-end real estate market. His dedication to providing exceptional service, combined with his passion for waterfront living, has earned him a reputation for successfully matching discerning clients with their dream properties. Whether buying or selling, Adam\'s personalized approach ensures a smooth, informed experience every step of the way, making him a trusted advisor for those seeking the finest in coastal luxury living.'
-  );
-  const [agentPhoto, setAgentPhoto] = useState('/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png');
+  // Initialize with empty values to force reading from localStorage
+  const [agentName, setAgentName] = useState('');
+  const [agentBio, setAgentBio] = useState('');
+  const [agentPhoto, setAgentPhoto] = useState('');
 
-  // Load agent information from localStorage
+  // Load agent information from localStorage on every render
   useEffect(() => {
+    // Force refresh from localStorage
     const storedName = localStorage.getItem('agent_name');
     const storedBio = localStorage.getItem('agent_bio');
     const storedPhoto = localStorage.getItem('agent_photo');
 
-    if (storedName) setAgentName(storedName);
-    if (storedBio) setAgentBio(storedBio);
-    if (storedPhoto) setAgentPhoto(storedPhoto);
+    console.log("Loading agent data from localStorage:", { storedName, storedPhoto });
+
+    // Set defaults if nothing in localStorage
+    setAgentName(storedName || 'Adam Johnson');
+    setAgentBio(storedBio || 'A seasoned real estate agent specializing in luxury properties.');
+    setAgentPhoto(storedPhoto || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png');
   }, []);
 
   return (
