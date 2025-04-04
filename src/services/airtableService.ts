@@ -5,8 +5,17 @@ const getApiKey = () => localStorage.getItem('airtable_api_key') || import.meta.
 const getBaseId = () => localStorage.getItem('airtable_base_id') || import.meta.env.VITE_AIRTABLE_BASE_ID || '';
 const getAgentFilter = () => localStorage.getItem('airtable_agent_filter') || '';
 
-// The actual table name in the Airtable base
-const TABLE_NAME = 'Property Management System Listings';
+// The actual table names in the Airtable base
+const PROPERTY_TABLE_NAME = 'Property Management System Listings';
+const AGENT_TABLE_NAME = 'Agents';
+
+// Interface for Agent data
+export interface Agent {
+  id: string;
+  name: string;
+  bio: string;
+  photo?: string;
+}
 
 interface ShowingDate {
   date: string;
@@ -130,6 +139,52 @@ export const fetchListingAgents = async (apiKey?: string, baseId?: string): Prom
   } catch (error) {
     console.error('Error fetching listing agents from Airtable:', error);
     return [];
+  }
+};
+
+// Function to get primary agent data
+export const getPrimaryAgent = async (): Promise<Agent | null> => {
+  try {
+    const base = getBase();
+    if (!base) return null;
+    
+    console.log(`Fetching agent data from Airtable (${new Date().toISOString()})`);
+    
+    const records = await base(AGENT_TABLE_NAME).select({
+      maxRecords: 1,
+      sort: [{ field: 'Agent Name', direction: 'asc' }]
+    }).firstPage();
+    
+    if (records.length === 0) {
+      console.log('No agent records found in Airtable');
+      return null;
+    }
+    
+    const agentRecord = records[0];
+    const fields = agentRecord.fields;
+
+    // Type casting to handle the Airtable attachment type
+    const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
+    const photoUrl = photo && photo.length > 0 ? photo[0].url : undefined;
+    
+    const agent: Agent = {
+      id: agentRecord.id,
+      name: fields['Agent Name'] as string || 'Default Agent',
+      bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
+      photo: photoUrl
+    };
+    
+    console.log('Agent data fetched successfully:', {
+      id: agent.id,
+      name: agent.name,
+      bioLength: agent.bio?.length || 0,
+      hasPhoto: !!agent.photo
+    });
+    
+    return agent;
+  } catch (error) {
+    console.error('Error fetching agent from Airtable:', error);
+    return null;
   }
 };
 
