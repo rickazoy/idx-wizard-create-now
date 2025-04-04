@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Video } from 'lucide-react';
+import { Video, Loader2 } from 'lucide-react';
 
 const PropertyVideos = () => {
   const { data: properties, isLoading, error } = useQuery({
@@ -98,6 +98,7 @@ const PropertyVideos = () => {
   ];
 
   const videosToDisplay = properties && properties.length > 0 ? properties : fallbackVideos;
+  const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
 
   // Helper function to get the correct video thumbnail URL
   const getVideoThumbnail = (property: Property) => {
@@ -106,6 +107,27 @@ const PropertyVideos = () => {
     }
     return 'https://placehold.co/600x400?text=No+Video';
   };
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4">Loading video tours...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error && isAirtableConfigured) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom text-center">
+          <p className="text-red-500">Error loading videos. Please check your Airtable connection.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -117,14 +139,25 @@ const PropertyVideos = () => {
               Take a virtual tour of our exclusive properties
             </p>
           </div>
-          <Button 
-            asChild
-            className="mt-4 md:mt-0"
-          >
-            <Link to="/videos">
-              View All Videos
-            </Link>
-          </Button>
+          <div className="flex gap-4 mt-4 md:mt-0">
+            {!isAirtableConfigured && (
+              <Button 
+                variant="outline"
+                asChild
+              >
+                <Link to="/settings">
+                  Configure Airtable
+                </Link>
+              </Button>
+            )}
+            <Button 
+              asChild
+            >
+              <Link to="/videos">
+                View All Videos
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <Carousel className="w-full">
@@ -158,6 +191,11 @@ const PropertyVideos = () => {
                       <p className="text-sm text-gray-600 line-clamp-2 mt-1">
                         {property.propertyDescription || property.description}
                       </p>
+                      {property.listingAgent && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Agent: {property.listingAgent}
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

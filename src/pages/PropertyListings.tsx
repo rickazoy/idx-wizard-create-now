@@ -1,111 +1,72 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import PropertyCard, { Property } from '@/components/PropertyCard';
+import PropertyCard from '@/components/PropertyCard';
 import PropertyFilter, { FilterValues } from '@/components/PropertyFilter';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Grid, List } from 'lucide-react';
-
-// Sample property data
-const sampleProperties: Property[] = [
-  {
-    id: '1',
-    address: '123 Main Street',
-    city: 'Beverly Hills',
-    state: 'CA',
-    zipCode: '90210',
-    price: 1250000,
-    bedrooms: 4,
-    bathrooms: 3,
-    squareFeet: 2850,
-    propertyType: 'House',
-    listingType: 'For Sale',
-    imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1000&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    address: '456 Ocean Drive',
-    city: 'Malibu',
-    state: 'CA',
-    zipCode: '90265',
-    price: 3750000,
-    bedrooms: 5,
-    bathrooms: 4.5,
-    squareFeet: 4200,
-    propertyType: 'House',
-    listingType: 'For Sale',
-    imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1000&auto=format&fit=crop',
-  },
-  {
-    id: '3',
-    address: '789 Sunset Boulevard',
-    city: 'Los Angeles',
-    state: 'CA',
-    zipCode: '90046',
-    price: 5500,
-    bedrooms: 2,
-    bathrooms: 2,
-    squareFeet: 1200,
-    propertyType: 'Apartment',
-    listingType: 'For Rent',
-    imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop',
-  },
-  {
-    id: '4',
-    address: '101 Wilshire Blvd',
-    city: 'Santa Monica',
-    state: 'CA',
-    zipCode: '90401',
-    price: 875000,
-    bedrooms: 3,
-    bathrooms: 2,
-    squareFeet: 1750,
-    propertyType: 'Condo',
-    listingType: 'For Sale',
-    imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1000&auto=format&fit=crop',
-  },
-  {
-    id: '5',
-    address: '222 Venice Beach',
-    city: 'Venice',
-    state: 'CA',
-    zipCode: '90291',
-    price: 3200,
-    bedrooms: 1,
-    bathrooms: 1,
-    squareFeet: 950,
-    propertyType: 'Apartment',
-    listingType: 'For Rent',
-    imageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1000&auto=format&fit=crop',
-  },
-  {
-    id: '6',
-    address: '333 Canyon Road',
-    city: 'Bel Air',
-    state: 'CA',
-    zipCode: '90077',
-    price: 7900000,
-    bedrooms: 6,
-    bathrooms: 7,
-    squareFeet: 8500,
-    propertyType: 'House',
-    listingType: 'For Sale',
-    imageUrl: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1000&auto=format&fit=crop',
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { getProperties, getPropertiesForSale, Property } from '@/services/airtableService';
+import { useToast } from '@/hooks/use-toast';
 
 const PropertyListings: React.FC = () => {
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') || '';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'all' | 'for-sale' | 'for-rent'>('all');
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>(sampleProperties);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+
+  // Fetch properties from Airtable
+  const { data: properties, isLoading: isLoadingAll, error: errorAll } = useQuery({
+    queryKey: ['properties'],
+    queryFn: getProperties,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch properties for sale for the 'for-sale' tab
+  const { data: propertiesForSale, isLoading: isLoadingSale } = useQuery({
+    queryKey: ['propertiesForSale'],
+    queryFn: getPropertiesForSale,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: activeTab === 'for-sale',
+  });
+
+  // Show error toast if API requests fail
+  useEffect(() => {
+    if (errorAll) {
+      toast({
+        title: 'Error Loading Properties',
+        description: 'Could not load properties from Airtable. Please check your connection settings.',
+        variant: 'destructive',
+      });
+    }
+  }, [errorAll, toast]);
+
+  // Convert listingType string from Airtable to our expected format
+  const normalizeListingType = (type: string): 'For Sale' | 'For Rent' => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('sale')) return 'For Sale';
+    if (lowerType.includes('rent')) return 'For Rent';
+    return 'For Sale'; // Default
+  };
 
   // Filter properties based on search term, tab, and filters
   const applyFilters = (filters: FilterValues) => {
-    let result = sampleProperties;
+    // Choose the right data source based on active tab
+    let dataSource: Property[] = [];
+    
+    if (activeTab === 'for-sale' && propertiesForSale) {
+      dataSource = propertiesForSale;
+    } else if (properties) {
+      dataSource = properties;
+    } else {
+      dataSource = [];
+    }
+
+    let result = [...dataSource];
 
     // Apply search filter if present
     if (searchTerm) {
@@ -113,16 +74,16 @@ const PropertyListings: React.FC = () => {
       result = result.filter(
         (property) =>
           property.address.toLowerCase().includes(term) ||
-          property.city.toLowerCase().includes(term) ||
-          property.zipCode.includes(term)
+          (property.city && property.city.toLowerCase().includes(term)) ||
+          (property.zipCode && property.zipCode.includes(term))
       );
     }
 
-    // Apply tab filter
-    if (activeTab === 'for-sale') {
-      result = result.filter((property) => property.listingType === 'For Sale');
-    } else if (activeTab === 'for-rent') {
-      result = result.filter((property) => property.listingType === 'For Rent');
+    // Apply tab filter for 'for-rent' (for-sale is already filtered at query level)
+    if (activeTab === 'for-rent') {
+      result = result.filter((property) => 
+        normalizeListingType(property.listingType) === 'For Rent'
+      );
     }
 
     // Apply price filter
@@ -154,15 +115,27 @@ const PropertyListings: React.FC = () => {
     setFilteredProperties(result);
   };
 
-  // Initialize with default filters
+  // Apply default filters when data loads or tab changes
   useEffect(() => {
-    applyFilters({
-      priceRange: [0, 1000000],
-      bedrooms: 'any',
-      bathrooms: 'any',
-      propertyType: 'any',
-    });
-  }, [searchTerm, activeTab]);
+    if (properties || propertiesForSale) {
+      applyFilters({
+        priceRange: [0, 10000000], // Higher default maximum
+        bedrooms: 'any',
+        bathrooms: 'any',
+        propertyType: 'any',
+      });
+    }
+  }, [properties, propertiesForSale, searchTerm, activeTab]);
+
+  // Convert Property objects from Airtable to format expected by PropertyCard
+  const formatPropertyForCard = (property: Property) => {
+    return {
+      ...property,
+      listingType: normalizeListingType(property.listingType),
+    };
+  };
+
+  const isLoading = isLoadingAll || isLoadingSale;
 
   return (
     <div className="container-custom py-8">
@@ -213,7 +186,11 @@ const PropertyListings: React.FC = () => {
         </div>
       </div>
 
-      {filteredProperties.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p>Loading properties...</p>
+        </div>
+      ) : filteredProperties.length === 0 ? (
         <div className="text-center py-12">
           <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-medium mb-2">No properties found</h3>
@@ -223,7 +200,7 @@ const PropertyListings: React.FC = () => {
           <Button 
             onClick={() => {
               applyFilters({
-                priceRange: [0, 1000000],
+                priceRange: [0, 10000000],
                 bedrooms: 'any',
                 bathrooms: 'any',
                 propertyType: 'any',
@@ -242,7 +219,7 @@ const PropertyListings: React.FC = () => {
           {filteredProperties.map((property) => (
             <PropertyCard 
               key={property.id} 
-              property={property} 
+              property={formatPropertyForCard(property)} 
             />
           ))}
         </div>
