@@ -3,7 +3,7 @@ import Airtable from 'airtable';
 
 // Table names in the Airtable base
 export const PROPERTY_TABLE_NAME = 'Property Management System Listings';
-export const AGENT_TABLE_NAME = 'tblb5oePiv62IFWN1'; // Use the exact table ID from the URL
+export const AGENT_TABLE_NAME = 'Agents'; // Updated to use the correct table name
 
 // Get API token and base ID from localStorage or environment variables
 export const getApiKey = () => localStorage.getItem('airtable_api_key') || import.meta.env.VITE_AIRTABLE_API_KEY || '';

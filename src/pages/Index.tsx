@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -53,17 +54,29 @@ const featuredProperties: Property[] = [
   },
 ];
 
+// Define styles for the hero section with your uploaded image
+const heroStyle = {
+  backgroundImage: 'url("/lovable-uploads/a6fa7bc8-8ae9-40bf-a535-43106eaf9f89.png")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  padding: '8rem 0',
+  position: 'relative' as 'relative',
+};
+
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Hero Section */}
-      <section className="hero-section">
+      {/* Hero Section with your uploaded image background */}
+      <section className="hero-section relative" style={heroStyle}>
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/50"></div>
         <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
               Find Your Dream Home
             </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
+            <p className="text-xl md:text-2xl mb-8 opacity-90 text-white">
               Search properties, get market insights, and find your perfect place.
             </p>
             <SearchBar />
