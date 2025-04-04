@@ -30,6 +30,14 @@ const SetupAirtablePrompt: React.FC<SetupAirtablePromptProps> = ({ className }) 
           You need to configure your Airtable API Token and Base ID to view real property data.
           Until configured, sample data will be displayed.
         </p>
+        <div className="text-sm space-y-2 mb-4 bg-secondary/50 p-3 rounded-md">
+          <p className="font-medium">How to find your Airtable information:</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Create a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Airtable account</a></li>
+            <li>Copy your Base ID from the URL when viewing your base (starts with "app")</li>
+            <li>Ensure your table is named "Properties" with required fields</li>
+          </ol>
+        </div>
       </CardContent>
       <CardFooter>
         <Button asChild>

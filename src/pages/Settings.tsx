@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableService';
+import { AlertCircle } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
@@ -48,7 +49,7 @@ const Settings = () => {
     defaultValues: {
       apiKey: localStorage.getItem('airtable_api_key') || '',
       baseId: localStorage.getItem('airtable_base_id') || '',
-      listingAgentFilter: localStorage.getItem('airtable_agent_filter') || '',
+      listingAgentFilter: localStorage.getItem('airtable_agent_filter') || 'all',
       isAdmin: localStorage.getItem('is_admin') === 'true',
     },
   });
@@ -127,6 +128,23 @@ const Settings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-amber-800">Important Airtable Setup Information</h3>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Make sure you have:
+                  </p>
+                  <ul className="text-sm text-amber-700 list-disc list-inside mt-1 space-y-1">
+                    <li>Created a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="underline">Airtable account</a></li>
+                    <li>Copied the correct Base ID (it should start with "app")</li>
+                    <li>Named your table "Properties" with all required fields</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -174,7 +192,7 @@ const Settings = () => {
                     <FormItem>
                       <FormLabel>Base ID</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your Airtable Base ID" {...field} />
+                        <Input placeholder="Your Airtable Base ID (starts with 'app')" {...field} />
                       </FormControl>
                       <FormDescription>
                         The ID of your Airtable base containing property listings

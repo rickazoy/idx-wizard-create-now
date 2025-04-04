@@ -1,4 +1,3 @@
-
 import Airtable, { Attachment, Collaborator } from 'airtable';
 
 // Get API token and base ID from localStorage or environment variables
@@ -69,7 +68,10 @@ const getBase = () => {
 // Test connection to Airtable and save config
 export const saveAirtableConfig = async (apiKey: string, baseId: string): Promise<boolean> => {
   try {
-    const testBase = new Airtable({ apiKey }).base(baseId);
+    // Clean up the baseId - remove any URLs and just keep the ID part
+    const cleanBaseId = baseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
+    
+    const testBase = new Airtable({ apiKey }).base(cleanBaseId);
     await testBase('Properties').select({ maxRecords: 1 }).firstPage();
     return true;
   } catch (error) {
@@ -89,7 +91,10 @@ export const fetchListingAgents = async (apiKey?: string, baseId?: string): Prom
       return [];
     }
     
-    const base = new Airtable({ apiKey: useApiKey }).base(useBaseId);
+    // Clean up the baseId - remove any URLs and just keep the ID part
+    const cleanBaseId = useBaseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
+    
+    const base = new Airtable({ apiKey: useApiKey }).base(cleanBaseId);
     const records = await base('Properties').select({
       fields: ['Listing Agent'],
       filterByFormula: 'NOT({Listing Agent} = "")',
@@ -117,7 +122,7 @@ const buildFilterFormula = (baseFilter?: string): string => {
   let formula = baseFilter || '';
   
   // Add agent filter if specified
-  if (agentFilter) {
+  if (agentFilter && agentFilter !== 'all') {
     const agentCondition = `{Listing Agent} = '${agentFilter}'`;
     formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
   }
