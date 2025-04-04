@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Grid, List } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { getProperties, getPropertiesForSale, Property } from '@/services/airtableService';
+import { getProperties, getPropertiesForSale, Property } from '@/services/airtable';
 import { useToast } from '@/hooks/use-toast';
 
 const PropertyListings: React.FC = () => {
