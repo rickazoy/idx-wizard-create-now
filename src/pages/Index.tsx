@@ -84,9 +84,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Agent Feature Section */}
-      <AgentFeature />
-
       {/* Featured Properties Section */}
       <section className="py-16 bg-white">
         <div className="container-custom">
@@ -154,6 +151,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Agent Feature Section */}
+      <AgentFeature />
 
       {/* Popular Areas Section */}
       <section className="py-16 bg-white">
