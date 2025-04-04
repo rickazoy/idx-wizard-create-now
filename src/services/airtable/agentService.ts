@@ -77,8 +77,9 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
       const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
       const photoUrl = photo && photo.length > 0 ? photo[0].url : undefined;
       
-      // Get agent logo
+      // Get agent logo with higher resolution
       const logo = fields['Agent Logo'] as readonly Attachment[] | undefined;
+      // Use the full-resolution URL for the logo
       const logoUrl = logo && logo.length > 0 ? logo[0].url : undefined;
       
       const agent: Agent = {
