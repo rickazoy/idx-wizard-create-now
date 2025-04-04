@@ -56,7 +56,7 @@ const featuredProperties: Property[] = [
 
 // Define styles for the hero section with your uploaded image
 const heroStyle = {
-  backgroundImage: 'url("/lovable-uploads/a6fa7bc8-8ae9-40bf-a535-43106eaf9f89.png")',
+  backgroundImage: 'url("/lovable-uploads/a78bc615-416d-4e55-9763-e5f19ae0886a.png")',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
