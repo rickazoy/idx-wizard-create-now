@@ -24,11 +24,7 @@ export interface IDXProperty {
   idxStatus: string;
   featured: string;
   image: {
-    [key: string]: {
-      url: string;
-      caption: string;
-    } | number;
-    totalCount: string;
+    [key: string]: { url: string; caption: string; } | string;
   };
 }
 
@@ -45,7 +41,7 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
   // Get primary image URL
   const firstImageKey = Object.keys(idxProperty.image).find(key => key !== 'totalCount');
   const imageData = firstImageKey ? idxProperty.image[firstImageKey] : null;
-  const imageUrl = imageData && typeof imageData !== 'number' ? imageData.url : '';
+  const imageUrl = imageData && typeof imageData !== 'string' ? imageData.url : '';
 
   // Convert bathroom string to number (handle decimal values)
   const bathrooms = parseFloat(idxProperty.totalBaths) || 0;
@@ -70,7 +66,8 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
     propertyType: idxProperty.idxPropType,
     listingType: idxProperty.idxStatus === 'active' ? 'For Sale' : 'For Rent',
     imageUrl: imageUrl || 'https://placehold.co/600x400?text=No+Image',
-    description: idxProperty.remarksConcat
+    description: idxProperty.remarksConcat,
+    isIdxProperty: true
   };
 };
 
@@ -142,7 +139,7 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
               "url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1000&auto=format&fit=crop",
               "caption": "Front view"
             },
-            "totalCount": "39"
+            "totalCount": "39" as any
           }
         },
         "a000!%5358959": {
@@ -186,7 +183,7 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
               "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop",
               "caption": "Front"
             },
-            "totalCount": "34"
+            "totalCount": "34" as any
           }
         }
       };

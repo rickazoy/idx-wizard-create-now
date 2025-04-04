@@ -21,6 +21,7 @@ export interface Property {
   imageUrl: string;
   description?: string;
   isIdxProperty?: boolean;
+  status?: string; // Make status optional to handle IDX properties
 }
 
 interface PropertyCardProps {

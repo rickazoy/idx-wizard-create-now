@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import PropertyCard from '@/components/PropertyCard';
+import PropertyCard, { Property } from '@/components/PropertyCard';
 import PropertyFilter, { FilterValues } from '@/components/PropertyFilter';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Grid, List, Database } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { getProperties, Property } from '@/services/airtable/propertyService';
+import { getProperties } from '@/services/airtable/propertyService';
 import { useToast } from '@/hooks/use-toast';
 import PopularAreas from '@/components/PopularAreas';
 import ApplicationWrapper from '@/components/ApplicationWrapper';
@@ -24,13 +23,11 @@ const PropertyListings: React.FC = () => {
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [isIdxEnabled, setIsIdxEnabled] = useState(false);
 
-  // Check if IDX is enabled
   useEffect(() => {
     const idxApiKey = localStorage.getItem('idx_api_key');
     setIsIdxEnabled(!!idxApiKey && idxApiKey.length > 0);
   }, []);
 
-  // Fetch properties from Airtable
   const { 
     data: airtableProperties, 
     isLoading: isLoadingAirtable, 
@@ -41,7 +38,6 @@ const PropertyListings: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch properties from IDX if enabled
   const {
     data: idxProperties,
     isLoading: isLoadingIdx,
@@ -70,12 +66,11 @@ const PropertyListings: React.FC = () => {
     }
   }, [idxError, isIdxEnabled, toast]);
 
-  // Combine properties from both sources
   const allProperties = React.useMemo(() => {
     const airtable = airtableProperties || [];
-    const idx = idxProperties ? idxProperties.map(prop => ({ ...prop, isIdxProperty: true })) : [];
+    const idx = idxProperties || [];
     
-    return [...airtable, ...idx];
+    return [...airtable, ...idx] as Property[];
   }, [airtableProperties, idxProperties]);
 
   const applyFilters = (filters: FilterValues) => {

@@ -1,6 +1,6 @@
 
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc' // Using react-swc plugin that's likely already installed
 import path from 'path'
 
 // https://vitejs.dev/config/
@@ -12,10 +12,11 @@ export default defineConfig({
     },
   },
   server: {
+    port: 8080, // Setting port to 8080 as required
     proxy: {
       // Mock API for IDX integration
       '/api/idx/properties': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
@@ -28,8 +29,8 @@ export default defineConfig({
             console.log('Received Response:', req.method, req.url);
           });
         },
-        // Mock the response
-        bypass: (req, res) => {
+        // Mock the response - fixed return type
+        bypass: (req, res, _options) => { // Added the options parameter
           const idxApiKey = req.headers.authorization?.split(' ')[1];
           
           if (req.url === '/api/idx/properties' && idxApiKey) {
@@ -127,10 +128,10 @@ export default defineConfig({
             
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(mockData));
-            return true;
+            return true; // This now correctly returns a boolean
           }
           
-          return false;
+          return false; // This now correctly returns a boolean
         }
       }
     }
