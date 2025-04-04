@@ -8,7 +8,7 @@ const AgentFeature = () => {
   const [agentBio, setAgentBio] = useState(
     'Adam Johnson is a seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida. With a deep knowledge of the region\'s most exclusive neighborhoods, Adam offers a wealth of expertise in navigating the high-end real estate market. His dedication to providing exceptional service, combined with his passion for waterfront living, has earned him a reputation for successfully matching discerning clients with their dream properties. Whether buying or selling, Adam\'s personalized approach ensures a smooth, informed experience every step of the way, making him a trusted advisor for those seeking the finest in coastal luxury living.'
   );
-  const [agentPhoto, setAgentPhoto] = useState('/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png');
+  const [agentPhoto, setAgentPhoto] = useState('/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png');
 
   // Load agent information from localStorage
   useEffect(() => {
@@ -33,9 +33,6 @@ const AgentFeature = () => {
             </p>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <Button asChild className="bg-[#2374AB] hover:bg-[#1a5a87] px-8">
-                <Link to="/team">Our Team</Link>
-              </Button>
-              <Button asChild variant="outline" className="border-[#2374AB] text-[#2374AB] hover:bg-[#2374AB]/10 px-8">
                 <Link to="/contact">Contact</Link>
               </Button>
             </div>
