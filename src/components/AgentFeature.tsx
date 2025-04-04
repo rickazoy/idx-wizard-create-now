@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +32,7 @@ const AgentFeature = () => {
     
     // Set values with defaults if needed
     setAgentData({
-      name: name || 'Adam Johnson',
+      name: name || 'Default Agent',
       bio: bio || 'A seasoned real estate agent specializing in luxury properties.',
       photo: photo || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
     });
@@ -46,12 +46,13 @@ const AgentFeature = () => {
 
   // Load data when component mounts
   useEffect(() => {
+    // Force immediate load
     loadAgentData();
     
-    // Create an interval to check for changes every 2 seconds
+    // Create an interval to check for changes every 500ms
     const intervalId = setInterval(() => {
       loadAgentData();
-    }, 2000);
+    }, 500);
     
     // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
@@ -82,17 +83,25 @@ const AgentFeature = () => {
           
           {/* Right side: Agent photo with debug info displayed */}
           <div className="flex-shrink-0">
-            <img 
-              src={`${agentData.photo}?nocache=${timestamp}`} 
-              alt={`${agentData.name} - Real Estate Agent`} 
-              className="w-[300px] h-[300px] object-cover rounded-lg shadow-md"
-              onError={(e) => {
-                console.error("Image failed to load:", agentData.photo);
-                e.currentTarget.src = '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png?nocache=' + timestamp;
-              }}
-            />
-            <div className="mt-2 text-xs text-gray-500 text-center">
-              Last updated: {new Date().toLocaleTimeString()}
+            <div className="relative">
+              <img 
+                src={`${agentData.photo}?nocache=${timestamp}`} 
+                alt={`${agentData.name} - Real Estate Agent`} 
+                className="w-[300px] h-[300px] object-cover rounded-lg shadow-md"
+                onError={(e) => {
+                  console.error("Image failed to load:", agentData.photo);
+                  e.currentTarget.src = '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png?nocache=' + timestamp;
+                }}
+              />
+              <div className="absolute top-0 left-0 bg-black/80 text-white text-xs p-1 rounded">
+                Cache key: {timestamp}
+              </div>
+            </div>
+            <div className="mt-2 text-xs text-gray-500">
+              <div>Last updated: {new Date().toLocaleTimeString()}</div>
+              <div className="bg-amber-100 p-1 rounded mt-1 text-amber-800">
+                Agent name in localStorage: {localStorage.getItem('agent_name') || 'Not set'}
+              </div>
             </div>
           </div>
         </div>
