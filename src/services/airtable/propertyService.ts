@@ -47,6 +47,11 @@ export interface Property {
   imageUrl: string;
   propertyAddress?: string;
   propertyDescription?: string;
+  yearBuilt?: number;
+  lotSize?: number;
+  garage?: number;
+  propertyTax?: number;
+  features?: string[];
 }
 
 // Function to get all properties
@@ -109,6 +114,11 @@ export const getProperties = async (): Promise<Property[]> => {
         propertyType: fields['Property Type'] as string || 'Unknown',
         listingType: fields['Listing Type'] as string || '',
         listingAgent: fields['Listing Agent'] as string || '',
+        yearBuilt: fields['Year Built'] as number || 0,
+        lotSize: fields['Lot Size'] as number || 0,
+        garage: fields['Garage'] as number || 0,
+        propertyTax: fields['Property Tax'] as number || 0,
+        features: fields['Features'] as string[] || [],
         imageUrl: images && images.length > 0 ? images[0].url : 'https://placehold.co/600x400?text=No+Image'
       };
     });
@@ -170,6 +180,11 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
       propertyType: fields['Property Type'] as string || 'Unknown',
       listingType: fields['Listing Type'] as string || '',
       listingAgent: fields['Listing Agent'] as string || '',
+      yearBuilt: fields['Year Built'] as number || 0,
+      lotSize: fields['Lot Size'] as number || 0,
+      garage: fields['Garage'] as number || 0,
+      propertyTax: fields['Property Tax'] as number || 0,
+      features: fields['Features'] as string[] || [],
       imageUrl: images && images.length > 0 ? images[0].url : 'https://placehold.co/600x400?text=No+Image'
     };
   } catch (error) {
