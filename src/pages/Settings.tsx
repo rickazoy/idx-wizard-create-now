@@ -29,7 +29,7 @@ import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableServi
 
 // Form validation schema
 const formSchema = z.object({
-  apiKey: z.string().min(1, { message: 'API Key is required' }),
+  apiKey: z.string().min(1, { message: 'API Token is required' }),
   baseId: z.string().min(1, { message: 'Base ID is required' }),
   listingAgentFilter: z.string().optional(),
   isAdmin: z.boolean().default(false),
@@ -69,7 +69,7 @@ const Settings = () => {
           console.error('Error fetching listing agents:', error);
           toast({
             title: 'Error',
-            description: 'Failed to fetch listing agents. Please check your API key and Base ID.',
+            description: 'Failed to fetch listing agents. Please check your API Token and Base ID.',
             variant: 'destructive',
           });
         } finally {
@@ -155,10 +155,13 @@ const Settings = () => {
                   name="apiKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>API Key</FormLabel>
+                      <FormLabel>API Token</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your Airtable API key" {...field} />
+                        <Input placeholder="Your Airtable API Token" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        Enter your Airtable Personal Access Token
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -173,6 +176,9 @@ const Settings = () => {
                       <FormControl>
                         <Input placeholder="Your Airtable Base ID" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        The ID of your Airtable base containing property listings
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -203,6 +209,9 @@ const Settings = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        <FormDescription>
+                          Filter property listings by a specific agent
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

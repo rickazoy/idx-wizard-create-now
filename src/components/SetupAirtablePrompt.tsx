@@ -27,7 +27,7 @@ const SetupAirtablePrompt: React.FC<SetupAirtablePromptProps> = ({ className }) 
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4">
-          You need to configure your Airtable API key and Base ID to view real property data.
+          You need to configure your Airtable API Token and Base ID to view real property data.
           Until configured, sample data will be displayed.
         </p>
       </CardContent>

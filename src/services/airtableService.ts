@@ -1,7 +1,7 @@
 
 import Airtable, { Attachment, Collaborator } from 'airtable';
 
-// Get API key and base ID from localStorage or environment variables
+// Get API token and base ID from localStorage or environment variables
 const getApiKey = () => localStorage.getItem('airtable_api_key') || import.meta.env.VITE_AIRTABLE_API_KEY || '';
 const getBaseId = () => localStorage.getItem('airtable_base_id') || import.meta.env.VITE_AIRTABLE_BASE_ID || '';
 const getAgentFilter = () => localStorage.getItem('airtable_agent_filter') || '';
