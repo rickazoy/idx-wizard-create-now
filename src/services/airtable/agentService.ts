@@ -26,13 +26,13 @@ export const fetchListingAgents = async (apiKey?: string, baseId?: string): Prom
     // Extract agent names
     const agents = new Set<string>();
     records.forEach(record => {
-      const agent = record.get('Agent Name');
-      if (agent) {
-        if (typeof agent === 'string') {
-          agents.add(agent);
-        } else if (Array.isArray(agent)) {
-          agent.forEach(id => {
-            if (typeof id === 'string') agents.add(id);
+      const agentName = record.get('Agent Name');
+      if (agentName) {
+        if (typeof agentName === 'string') {
+          agents.add(agentName);
+        } else if (Array.isArray(agentName)) {
+          agentName.forEach(name => {
+            if (typeof name === 'string') agents.add(name);
           });
         }
       }

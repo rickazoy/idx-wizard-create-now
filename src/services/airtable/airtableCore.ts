@@ -87,10 +87,11 @@ export const buildFilterFormula = (baseFilter?: string): string => {
   if (agentFilter && agentFilter !== 'all') {
     // If the agent filter value looks like a record ID (starts with 'rec')
     if (agentFilter.startsWith('rec')) {
+      // Get the listing by Agent record ID
       const agentCondition = `FIND('${agentFilter}', ARRAYJOIN({Listing Agent})) > 0`;
       formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
     } else {
-      // Otherwise, treat it as a regular string value
+      // Use the Agent Name field for filtering
       const agentCondition = `{Listing Agent} = '${agentFilter}'`;
       formula = formula ? `AND(${formula}, ${agentCondition})` : agentCondition;
     }
