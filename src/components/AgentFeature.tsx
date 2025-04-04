@@ -24,7 +24,7 @@ const AgentFeature = () => {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
   
-  // Debug function to display what we're actually loading
+  // Load agent data function
   const loadAgentData = async () => {
     try {
       setIsLoading(true);
@@ -42,14 +42,14 @@ const AgentFeature = () => {
       if (agent) {
         // Set agent data from Airtable
         setAgentData({
-          name: agent.name || 'Default Agent',
-          bio: agent.bio || 'A seasoned real estate agent specializing in luxury properties.',
+          name: agent.name,
+          bio: agent.bio,
           photo: agent.photo || '/lovable-uploads/c100db66-1b93-4d30-9033-5dd71fcc3784.png'
         });
         
         setLoadError(null);
         
-        // Show toast for debugging
+        // Show toast for successful load
         toast({
           title: "Agent Data Loaded",
           description: `Loaded agent: ${agent.name} from Airtable`,
