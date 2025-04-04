@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchFeaturedCampaignVideos, Campaign } from '@/services/airtable/campaignService';
+import { fetchFeaturedCampaigns, Campaign } from '@/services/airtable/campaignService';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { 
@@ -18,49 +18,65 @@ import { Video, Loader2 } from 'lucide-react';
 const PropertyVideos = () => {
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ['featuredCampaignVideos'],
-    queryFn: fetchFeaturedCampaignVideos,
+    queryFn: fetchFeaturedCampaigns,
   });
 
   const fallbackVideos: Campaign[] = [
     {
       id: 'v1',
+      name: 'Luxury Ocean View Tour',
       title: 'Luxury Ocean View Tour',
       propertyAddress: '789 Ocean Drive',
       description: 'Stunning oceanfront property with panoramic views',
-      videoFile: []
+      videoFile: {
+        url: '',
+        filename: 'placeholder'
+      }
     },
     {
       id: 'v2',
+      name: 'Mountain Retreat Experience',
       title: 'Mountain Retreat Experience',
       propertyAddress: '456 Mountain View',
       description: 'Luxurious mountain retreat with private forest views',
-      videoFile: []
+      videoFile: {
+        url: '',
+        filename: 'placeholder'
+      }
     },
     {
       id: 'v3',
+      name: 'Urban Living Tour',
       title: 'Urban Living Tour',
       propertyAddress: '123 Sunset Boulevard',
       description: 'Contemporary home in a peaceful neighborhood',
-      videoFile: []
+      videoFile: {
+        url: '',
+        filename: 'placeholder'
+      }
     },
     {
       id: 'v4',
+      name: 'Riverside Property Showcase',
       title: 'Riverside Property Showcase',
       propertyAddress: '321 River Road',
       description: 'Cozy riverfront property with private dock',
-      videoFile: []
+      videoFile: {
+        url: '',
+        filename: 'placeholder'
+      }
     }
   ];
 
   const videosToDisplay = campaigns && campaigns.length > 0 ? campaigns : fallbackVideos;
   const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
 
-  const getVideoThumbnail = (campaign: Campaign) => {
+  const getVideoThumbnail = (campaign: Campaign): string => {
     if (campaign.thumbnailUrl) {
       return campaign.thumbnailUrl;
     }
-    if (Array.isArray(campaign.videoFile) && campaign.videoFile.length > 0) {
-      return campaign.videoFile[0].url;
+    if (campaign.videoFile) {
+      return campaign.videoFile.url;
     }
     return 'https://placehold.co/600x400?text=No+Video';
   };

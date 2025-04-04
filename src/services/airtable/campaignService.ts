@@ -14,6 +14,9 @@ export interface Campaign {
   };
   primaryRealtor?: string;
   imageUrl?: string;
+  thumbnailUrl?: string;
+  title?: string;
+  propertyAddress?: string;
 }
 
 export const fetchCampaigns = async (): Promise<Campaign[]> => {
@@ -52,19 +55,28 @@ export const fetchCampaigns = async (): Promise<Campaign[]> => {
       return {
         id: record.id,
         name: fields['Campaign Name'] as string || 'Unnamed Campaign',
+        title: fields['Campaign Name'] as string || 'Unnamed Campaign',
         description: fields['Campaign Description'] as string || '',
+        propertyAddress: fields['Property Address'] as string,
         videoFile: videoFile && videoFile.length > 0 ? {
           url: videoFile[0].url,
           filename: videoFile[0].filename
         } : undefined,
         primaryRealtor: fields['Primary Realtor'] as string,
-        imageUrl: thumbnailImage && thumbnailImage.length > 0 ? thumbnailImage[0].url : undefined
+        imageUrl: thumbnailImage && thumbnailImage.length > 0 ? thumbnailImage[0].url : undefined,
+        thumbnailUrl: thumbnailImage && thumbnailImage.length > 0 ? thumbnailImage[0].url : undefined
       };
     });
   } catch (error) {
     console.error('Error fetching campaigns from Airtable:', error);
     return [];
   }
+};
+
+// Add this function to match what VideoListings is importing
+export const fetchCampaignVideos = async (): Promise<Campaign[]> => {
+  // Reuse the fetchCampaigns function
+  return fetchCampaigns();
 };
 
 export const fetchFeaturedCampaigns = async (limit = 4): Promise<Campaign[]> => {
@@ -80,4 +92,10 @@ export const fetchFeaturedCampaigns = async (limit = 4): Promise<Campaign[]> => 
     console.error('Error fetching featured campaigns:', error);
     return [];
   }
+};
+
+// Add this function to match what PropertyVideos is importing
+export const fetchFeaturedCampaignVideos = async (): Promise<Campaign[]> => {
+  // Reuse the fetchFeaturedCampaigns function
+  return fetchFeaturedCampaigns();
 };
