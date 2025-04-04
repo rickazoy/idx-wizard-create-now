@@ -55,9 +55,8 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
     
     console.log(`Fetching agent data from Airtable (${new Date().toISOString()})`);
     
-    // Create Agents table if it doesn't exist
     try {
-      // First try to get records from Agents table
+      // Try to get records from the Agents table using the exact field names
       const records = await base(AGENT_TABLE_NAME).select({
         maxRecords: 1,
         sort: [{ field: 'Agent Name', direction: 'asc' }]
@@ -70,6 +69,8 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
       
       const agentRecord = records[0];
       const fields = agentRecord.fields;
+
+      console.log('Raw agent record:', fields);
 
       // Type casting to handle the Airtable attachment type
       const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
@@ -90,8 +91,11 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
       });
       
       return agent;
-    } catch (error) {
-      console.error('Error fetching from Agents table, it may not exist yet:', error);
+    } catch (error: any) {
+      console.error('Error fetching from Agents table:', error);
+      if (error.statusCode === 404) {
+        console.error('Make sure the table name matches exactly: tblb5oePiv62IFWN1');
+      }
       return null;
     }
   } catch (error) {
@@ -111,34 +115,56 @@ export const updateAgent = async (agent: Omit<Agent, 'id'>): Promise<boolean> =>
     
     console.log(`Attempting to save agent data to Airtable (${new Date().toISOString()})`, agent);
     
-    // Check if the Agents table exists by trying to create a record
     try {
-      // Create fields for new agent
+      // First try to fetch existing records
+      const records = await base(AGENT_TABLE_NAME).select({
+        maxRecords: 1,
+      }).firstPage();
+      
+      // Create fields for agent data
       const fields: Record<string, any> = {
         'Agent Name': agent.name,
         'Agent Bio': agent.bio,
       };
 
       // Only include photo if it's a valid URL
-      if (agent.photo && agent.photo.startsWith('http')) {
-        fields['Agent Photo'] = [
-          {
-            url: agent.photo
-          }
-        ];
+      if (agent.photo && (agent.photo.startsWith('http') || agent.photo.startsWith('blob:'))) {
+        // For blob URLs, we can't directly save them to Airtable
+        // Just log this for now
+        if (agent.photo.startsWith('blob:')) {
+          console.log('Blob URLs cannot be saved directly to Airtable:', agent.photo);
+          // You would need to convert the blob to a file and upload it
+        } else {
+          fields['Agent Photo'] = [
+            {
+              url: agent.photo
+            }
+          ];
+        }
       }
       
-      // Try to create a new record in the Agents table
-      const result = await base(AGENT_TABLE_NAME).create(fields);
-      console.log('Created new agent record:', result.id);
+      let result;
+      if (records.length > 0) {
+        // Update existing record
+        console.log('Updating existing agent record:', records[0].id);
+        result = await base(AGENT_TABLE_NAME).update(records[0].id, fields);
+      } else {
+        // Create new record
+        console.log('Creating new agent record');
+        result = await base(AGENT_TABLE_NAME).create(fields);
+      }
+      
+      console.log('Agent record saved:', result.id);
       return true;
     } catch (error: any) {
-      // Check if the error is due to the table not existing
+      console.error('Error saving to Agents table:', error);
       if (error.statusCode === 404) {
-        console.error('The Agents table does not exist in this Airtable base. Please create it first.');
-        return false;
+        console.error('The table tblb5oePiv62IFWN1 was not found. Please verify the table ID.');
       }
-      throw error; // Re-throw for other errors
+      if (error.statusCode === 422) {
+        console.error('Invalid field names. Please ensure your table has fields named: Agent Name, Agent Bio, and Agent Photo');
+      }
+      return false;
     }
   } catch (error) {
     console.error('Error saving agent data to Airtable:', error);

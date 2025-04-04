@@ -3,7 +3,7 @@ import Airtable from 'airtable';
 
 // Table names in the Airtable base
 export const PROPERTY_TABLE_NAME = 'Property Management System Listings';
-export const AGENT_TABLE_NAME = 'Agents';
+export const AGENT_TABLE_NAME = 'tblb5oePiv62IFWN1'; // Use the exact table ID from the URL
 
 // Get API token and base ID from localStorage or environment variables
 export const getApiKey = () => localStorage.getItem('airtable_api_key') || import.meta.env.VITE_AIRTABLE_API_KEY || '';
@@ -31,20 +31,38 @@ export const getBase = () => {
 // Test connection to Airtable and save config
 export const saveAirtableConfig = async (apiKey: string, baseId: string): Promise<boolean> => {
   try {
-    // Clean up the baseId - remove any URLs and just keep the ID part
-    const cleanBaseId = baseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
+    // Extract the app ID from various possible URL formats
+    let cleanBaseId = baseId.trim();
+    
+    // Handle the appXXXXXX format in URL
+    if (cleanBaseId.includes('airtable.com/app')) {
+      const appMatch = cleanBaseId.match(/app[A-Za-z0-9]+/);
+      if (appMatch) {
+        cleanBaseId = appMatch[0];
+      }
+    }
+    
+    console.log('Using base ID:', cleanBaseId);
     
     const testBase = new Airtable({ apiKey }).base(cleanBaseId);
     
-    // First try to connect to the property table
+    // Try to connect to the agent table first (since that's what we're working with)
     try {
-      await testBase(PROPERTY_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
-      console.log('Successfully connected to Property Management System Listings table');
-    } catch (err: any) {
-      if (err.statusCode === 404) {
-        console.error('Property Management System Listings table not found');
+      await testBase(AGENT_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
+      console.log('Successfully connected to Agents table');
+    } catch (agentErr: any) {
+      console.log('Could not connect to Agents table directly:', agentErr.message);
+      
+      // If we can't connect to Agents table directly, try to connect to property table
+      try {
+        await testBase(PROPERTY_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
+        console.log('Successfully connected to Property Management System Listings table');
+      } catch (propertyErr: any) {
+        if (propertyErr.statusCode === 404) {
+          console.error('Property Management System Listings table not found');
+        }
+        throw propertyErr;
       }
-      throw err;
     }
     
     // Store the cleaned values
