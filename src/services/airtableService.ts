@@ -84,7 +84,7 @@ export const saveAirtableConfig = async (apiKey: string, baseId: string): Promis
     const cleanBaseId = baseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
     
     const testBase = new Airtable({ apiKey }).base(cleanBaseId);
-    await testBase(TABLE_NAME).select({ maxRecords: 1 }).firstPage();
+    await testBase(PROPERTY_TABLE_NAME).select({ maxRecords: 1 }).firstPage();
     return true;
   } catch (error) {
     console.error('Error connecting to Airtable:', error);
@@ -107,7 +107,7 @@ export const fetchListingAgents = async (apiKey?: string, baseId?: string): Prom
     const cleanBaseId = useBaseId.trim().replace(/^https:\/\/airtable\.com\//, '').split('/')[0];
     
     const base = new Airtable({ apiKey: useApiKey }).base(cleanBaseId);
-    const records = await base(TABLE_NAME).select({
+    const records = await base(PROPERTY_TABLE_NAME).select({
       fields: ['Listing Agent'],
       filterByFormula: 'NOT({Listing Agent} = "")',
     }).all();
@@ -224,7 +224,7 @@ export const getProperties = async (): Promise<Property[]> => {
       selectParams.filterByFormula = filterFormula;
     }
     
-    const records = await base(TABLE_NAME).select(selectParams).all();
+    const records = await base(PROPERTY_TABLE_NAME).select(selectParams).all();
     return records.map(record => {
       const fields = record.fields;
       
@@ -286,7 +286,7 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
     const base = getBase();
     if (!base) return null;
     
-    const record = await base(TABLE_NAME).find(id);
+    const record = await base(PROPERTY_TABLE_NAME).find(id);
     const fields = record.fields;
     
     // Type casting to handle the Airtable attachment type
@@ -348,7 +348,7 @@ export const getPropertiesWithVideos = async (): Promise<Property[]> => {
     
     const filterFormula = buildFilterFormula('NOT({Video File} = "")');
     
-    const records = await base(TABLE_NAME)
+    const records = await base(PROPERTY_TABLE_NAME)
       .select({
         filterByFormula: filterFormula
       })
@@ -397,7 +397,7 @@ export const fetchFeaturedVideos = async (): Promise<Property[]> => {
     
     const filterFormula = buildFilterFormula('NOT({Video File} = "")');
     
-    const records = await base(TABLE_NAME)
+    const records = await base(PROPERTY_TABLE_NAME)
       .select({
         filterByFormula: filterFormula,
         maxRecords: 4
@@ -450,7 +450,7 @@ export const getPropertiesForSale = async (): Promise<Property[]> => {
     
     const filterFormula = buildFilterFormula('{Listing Type} = "For Sale"');
     
-    const records = await base(TABLE_NAME)
+    const records = await base(PROPERTY_TABLE_NAME)
       .select({
         filterByFormula: filterFormula
       })
