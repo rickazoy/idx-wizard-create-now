@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,6 +31,7 @@ import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableServi
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Info, Upload, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 
 // Form validation schema for Airtable
 const airtableFormSchema = z.object({
@@ -56,6 +57,7 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("airtable");
   const [photoPreview, setPhotoPreview] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize Airtable form with default values
   const airtableForm = useForm<AirtableFormValues>({
@@ -167,6 +169,22 @@ const Settings = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Create a URL for the image
+    const imageUrl = URL.createObjectURL(file);
+    setPhotoPreview(imageUrl);
+    
+    // Set the file URL in the form
+    agentForm.setValue('photoUrl', imageUrl);
+  };
+  
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -380,21 +398,42 @@ const Settings = () => {
                           name="photoUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Photo URL</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Enter URL to agent photo" 
-                                  {...field}
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                    setPhotoPreview(e.target.value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                The URL to the agent's photo (use the Upload button in Lovable to upload a photo and get its URL)
-                              </FormDescription>
-                              <FormMessage />
+                              <FormLabel>Agent Photo</FormLabel>
+                              <div className="flex flex-col gap-2">
+                                <div className="flex gap-2 items-center">
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="URL to agent photo"
+                                      {...field}
+                                      onChange={(e) => {
+                                        field.onChange(e);
+                                        setPhotoPreview(e.target.value);
+                                      }}
+                                      className="flex-grow"
+                                    />
+                                  </FormControl>
+                                  <Button 
+                                    type="button" 
+                                    onClick={handleUploadClick}
+                                    variant="outline"
+                                    className="flex gap-2 items-center"
+                                  >
+                                    <Upload className="h-4 w-4" />
+                                    Upload
+                                  </Button>
+                                  <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                  />
+                                </div>
+                                <FormDescription>
+                                  Enter a URL or upload an image file for the agent photo
+                                </FormDescription>
+                                <FormMessage />
+                              </div>
                             </FormItem>
                           )}
                         />
