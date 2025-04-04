@@ -31,7 +31,7 @@ const AgentFeature = () => {
           </div>
           <div className="flex-1 order-1 lg:order-2">
             <img 
-              src="/lovable-uploads/a6fa7bc8-8ae9-40bf-a535-43106eaf9f89.png" 
+              src="/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png" 
               alt="Adam Johnson - Real Estate Agent" 
               className="w-full h-auto"
             />
