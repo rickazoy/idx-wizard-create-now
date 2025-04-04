@@ -1,4 +1,3 @@
-
 import { Property } from '@/components/PropertyCard';
 
 export interface IDXProperty {
@@ -14,6 +13,7 @@ export interface IDXProperty {
   listingPrice: string;
   listingID: string;
   remarksConcat: string;
+  rntLse?: string;
   bedrooms: string;
   totalBaths: string;
   latitude: string;
@@ -23,6 +23,7 @@ export interface IDXProperty {
   idxPropType: string;
   idxStatus: string;
   featured: string;
+  propStatus?: string;
   image: {
     [key: string]: { url: string; caption: string; } | string;
   };
@@ -32,24 +33,18 @@ export interface IDXResponse {
   [key: string]: IDXProperty;
 }
 
-// Convert IDX property to our app's Property format
 export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
-  // Extract numeric value from price string
   const priceString = idxProperty.listingPrice.replace(/[^0-9]/g, '');
   const price = parseInt(priceString) || 0;
   
-  // Get primary image URL
   const firstImageKey = Object.keys(idxProperty.image).find(key => key !== 'totalCount');
   const imageData = firstImageKey ? idxProperty.image[firstImageKey] : null;
   const imageUrl = imageData && typeof imageData !== 'string' ? imageData.url : '';
 
-  // Convert bathroom string to number (handle decimal values)
   const bathrooms = parseFloat(idxProperty.totalBaths) || 0;
   
-  // Convert bedroom string to number
   const bedrooms = parseInt(idxProperty.bedrooms) || 0;
   
-  // Convert square feet string to number (remove commas and other characters)
   const sqFtString = idxProperty.sqFt.replace(/[^0-9]/g, '');
   const squareFeet = parseInt(sqFtString) || 0;
   
@@ -71,7 +66,6 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
   };
 };
 
-// Fetch IDX properties
 export const fetchIDXProperties = async (): Promise<Property[]> => {
   try {
     const apiKey = localStorage.getItem('idx_api_key');
@@ -79,13 +73,8 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
       throw new Error('IDX API key not found');
     }
 
-    // This would be a real API call in production
-    // For now we're mocking the response for demonstration
-    
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Sample IDX data (in real world, you'd fetch from the API)
     const response = await fetch('/api/idx/properties', {
       headers: {
         'Authorization': `Bearer ${apiKey}`
@@ -93,11 +82,9 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
     });
     
     if (!response.ok) {
-      // For demo purposes, return mock data if API call fails
       console.log('Using mock IDX data');
       
-      // Create a sample IDX response
-      const mockData: IDXResponse = {
+      const mockData: { [key: string]: IDXProperty } = {
         "a000!%5362657": {
           "address": "20 Ingram Street",
           "streetName": "Ingram Street",
@@ -119,20 +106,8 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
           "longitude": "-73.843206",
           "acres": "0.24",
           "sqFt": "2,760",
-          "displayAddress": "y",
-          "listingAgentID": "8675301",
-          "listingOfficeID": "lmnop",
-          "sample_mlsPtID": "1",
-          "sample_mlsPhotoCount": "39",
-          "parentPtID": "1",
-          "detailsURL": "a000/5362657",
-          "idxID": "a000",
           "idxPropType": "Residential",
           "idxStatus": "active",
-          "viewCount": "2",
-          "mediaData": [],
-          "ohCount": "0",
-          "vtCount": "0",
           "featured": "y",
           "image": {
             "0": {
@@ -163,20 +138,8 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
           "longitude": "-74.000773",
           "acres": "0.31",
           "sqFt": "20,680",
-          "displayAddress": "y",
-          "listingAgentID": "8675301",
-          "listingOfficeID": "lmnop",
-          "sample_mlsPtID": "1",
-          "sample_mlsPhotoCount": "34",
-          "parentPtID": "1",
-          "detailsURL": "a000/5358959",
-          "idxID": "a000",
           "idxPropType": "Residential",
           "idxStatus": "active",
-          "viewCount": "6",
-          "mediaData": [],
-          "ohCount": "0",
-          "vtCount": "0",
           "featured": "y",
           "image": {
             "0": {
@@ -188,7 +151,6 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
         }
       };
       
-      // Convert each IDX property to our app's Property format
       return Object.values(mockData).map(convertIDXToProperty);
     }
     

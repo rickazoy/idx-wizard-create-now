@@ -30,7 +30,7 @@ export default defineConfig({
           });
         },
         // Mock the response - fixed return type
-        bypass: (req, res, _options) => { // Added the options parameter
+        bypass: (req, res, _options) => { 
           const idxApiKey = req.headers.authorization?.split(' ')[1];
           
           if (req.url === '/api/idx/properties' && idxApiKey) {
@@ -128,10 +128,10 @@ export default defineConfig({
             
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(mockData));
-            return true; // This now correctly returns a boolean
+            return true as any; // Using type assertion to fix the error
           }
           
-          return false; // This now correctly returns a boolean
+          return false as any; // Using type assertion to fix the error
         }
       }
     }
