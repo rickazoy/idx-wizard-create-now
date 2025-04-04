@@ -1,96 +1,83 @@
 
 import { Attachment } from 'airtable';
-import { getBase, buildFilterFormula } from './airtableCore';
+import { getBase } from './airtableCore';
 
-const CAMPAIGN_TABLE_NAME = 'Content Campaigns';
+export const CAMPAIGN_TABLE_NAME = 'Content Campaigns';
 
 export interface Campaign {
   id: string;
-  title: string;
-  description?: string;
-  videoFile?: Array<{
+  name: string;
+  description: string;
+  videoFile?: {
     url: string;
     filename: string;
-  }>;
+  };
   primaryRealtor?: string;
-  propertyAddress?: string;
-  campaignType?: string;
-  dateCreated?: string;
-  status?: string;
-  thumbnailUrl?: string;
+  imageUrl?: string;
 }
 
-export const fetchCampaignVideos = async (): Promise<Campaign[]> => {
+export const fetchCampaigns = async (): Promise<Campaign[]> => {
   try {
     const base = getBase();
     if (!base) return [];
     
-    // Get agent filter to match with Primary Realtor field
-    const agentFilter = localStorage.getItem('airtable_agent_filter') || '';
-    let filterFormula = '';
+    // Get agent filter from localStorage
+    const agentFilter = localStorage.getItem('airtable_agent_filter');
     
-    // Build filter formula based on agent selection
+    // Build filterByFormula based on selected agent
+    let filterFormula = '';
     if (agentFilter && agentFilter !== 'all') {
-      // If the agent filter value looks like a record ID (starts with 'rec')
-      if (agentFilter.startsWith('rec')) {
-        // Filter by Agent record ID
-        filterFormula = `{Primary Realtor} = '${agentFilter}'`;
-      } else {
-        // Filter by Agent Name
-        filterFormula = `{Primary Realtor} = '${agentFilter}'`;
-      }
+      filterFormula = `{Primary Realtor} = '${agentFilter}'`;
     }
     
-    // Only fetch records that have video files
-    const videoFilter = "NOT({Video File} = '')";
-    filterFormula = filterFormula 
-      ? `AND(${filterFormula}, ${videoFilter})` 
-      : videoFilter;
+    // Create select params
+    const selectParams: any = {
+      filterByFormula: filterFormula || '',
+      sort: [{ field: 'Campaign Name', direction: 'desc' }]
+    };
     
-    console.log('Campaign video filter formula:', filterFormula);
+    // If no filter formula, remove the property
+    if (!filterFormula) {
+      delete selectParams.filterByFormula;
+    }
     
-    const records = await base(CAMPAIGN_TABLE_NAME)
-      .select({
-        filterByFormula: filterFormula,
-        maxRecords: 4
-      })
-      .all();
-    
-    console.log(`Found ${records.length} campaign videos`);
+    const records = await base(CAMPAIGN_TABLE_NAME).select(selectParams).all();
     
     return records.map(record => {
       const fields = record.fields;
       
       const videoFile = fields['Video File'] as readonly Attachment[] | undefined;
-      const thumbnail = fields['Thumbnail'] as readonly Attachment[] | undefined;
+      const thumbnailImage = fields['Thumbnail Image'] as readonly Attachment[] | undefined;
       
       return {
         id: record.id,
-        title: fields['Campaign Title'] as string || '',
+        name: fields['Campaign Name'] as string || 'Unnamed Campaign',
         description: fields['Campaign Description'] as string || '',
-        videoFile: videoFile ? videoFile.map(video => ({
-          url: video.url || '',
-          filename: video.filename || ''
-        })) : [],
-        primaryRealtor: fields['Primary Realtor'] as string || '',
-        propertyAddress: fields['Property Address'] as string || '',
-        campaignType: fields['Campaign Type'] as string || '',
-        dateCreated: fields['Date Created'] as string || '',
-        status: fields['Status'] as string || '',
-        thumbnailUrl: thumbnail && thumbnail.length > 0 ? thumbnail[0].url : ''
+        videoFile: videoFile && videoFile.length > 0 ? {
+          url: videoFile[0].url,
+          filename: videoFile[0].filename
+        } : undefined,
+        primaryRealtor: fields['Primary Realtor'] as string,
+        imageUrl: thumbnailImage && thumbnailImage.length > 0 ? thumbnailImage[0].url : undefined
       };
     });
   } catch (error) {
-    console.error('Error fetching campaign videos from Airtable:', error);
+    console.error('Error fetching campaigns from Airtable:', error);
     return [];
   }
 };
 
-export const fetchFeaturedCampaignVideos = async (): Promise<Campaign[]> => {
+export const fetchFeaturedCampaigns = async (limit = 4): Promise<Campaign[]> => {
   try {
-    return await fetchCampaignVideos();
+    const campaigns = await fetchCampaigns();
+    
+    // Filter campaigns with video files
+    const campaignsWithVideo = campaigns.filter(campaign => campaign.videoFile);
+    
+    // Return limited number of campaigns
+    return campaignsWithVideo.slice(0, limit);
   } catch (error) {
-    console.error('Error fetching featured campaign videos:', error);
+    console.error('Error fetching featured campaigns:', error);
     return [];
   }
 };

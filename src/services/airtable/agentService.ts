@@ -8,6 +8,7 @@ export interface Agent {
   name: string;
   bio: string;
   photo?: string;
+  logo?: string;
 }
 
 // Fetch all listing agents from Airtable
@@ -76,18 +77,24 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
       const photo = fields['Agent Photo'] as readonly Attachment[] | undefined;
       const photoUrl = photo && photo.length > 0 ? photo[0].url : undefined;
       
+      // Get agent logo
+      const logo = fields['Agent Logo'] as readonly Attachment[] | undefined;
+      const logoUrl = logo && logo.length > 0 ? logo[0].url : undefined;
+      
       const agent: Agent = {
         id: agentRecord.id,
         name: fields['Agent Name'] as string || 'Default Agent',
         bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
-        photo: photoUrl
+        photo: photoUrl,
+        logo: logoUrl
       };
       
       console.log('Agent data fetched successfully:', {
         id: agent.id,
         name: agent.name,
         bioLength: agent.bio?.length || 0,
-        hasPhoto: !!agent.photo
+        hasPhoto: !!agent.photo,
+        hasLogo: !!agent.logo
       });
       
       return agent;
@@ -101,6 +108,17 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
   } catch (error) {
     console.error('Error fetching agent from Airtable:', error);
     return null;
+  }
+};
+
+// Function to get just the agent logo
+export const getAgentLogo = async (): Promise<string | undefined> => {
+  try {
+    const agent = await getPrimaryAgent();
+    return agent?.logo;
+  } catch (error) {
+    console.error('Error fetching agent logo:', error);
+    return undefined;
   }
 };
 

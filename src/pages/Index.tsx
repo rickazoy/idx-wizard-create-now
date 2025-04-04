@@ -9,6 +9,7 @@ import PropertyVideos from '@/components/PropertyVideos';
 import AgentFeature from '@/components/AgentFeature';
 import { useQuery } from '@tanstack/react-query';
 import { fetchFeaturedProperties } from '@/services/airtable/propertyService';
+import { getCityPropertyCounts } from '@/services/airtable/propertyService';
 import SetupAirtablePrompt from '@/components/SetupAirtablePrompt';
 import PopularAreas from '@/components/PopularAreas';
 import ApplicationWrapper from '@/components/ApplicationWrapper';
@@ -74,6 +75,12 @@ const Index = () => {
   const { data: featuredProperties, isLoading, error } = useQuery({
     queryKey: ['featuredProperties'],
     queryFn: fetchFeaturedProperties,
+  });
+
+  // Fetch property counts by city
+  const { data: cityCounts = {} } = useQuery({
+    queryKey: ['propertyCounts'],
+    queryFn: getCityPropertyCounts,
   });
 
   const isAirtableConfigured = localStorage.getItem('airtable_api_key') && localStorage.getItem('airtable_base_id');
@@ -216,31 +223,77 @@ const Index = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { name: 'Miami', count: 24, image: 'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?q=80&w=1000&auto=format&fit=crop' },
-                { name: 'Doral', count: 18, image: 'https://images.unsplash.com/photo-1622548331053-105252394d6f?q=80&w=1000&auto=format&fit=crop' },
-                { name: 'Coral Gables', count: 32, image: 'https://images.unsplash.com/photo-1546636889-ba9fdd63583e?q=80&w=1000&auto=format&fit=crop' },
-                { name: 'Miami Beach', count: 56, image: 'https://images.unsplash.com/photo-1535498730771-e735b998cd64?q=80&w=1000&auto=format&fit=crop' },
-              ].map((area, index) => (
-                <Link 
-                  key={index} 
-                  to={`/listings?search=${encodeURIComponent(area.name)}`}
-                  className="relative overflow-hidden rounded-lg group h-64 block"
-                >
-                  <img 
-                    src={area.image} 
-                    alt={area.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4 flex flex-col justify-end">
-                    <h3 className="text-white text-xl font-bold">{area.name}</h3>
-                    <div className="flex items-center text-white/90 mt-1">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span>{area.count} Properties</span>
-                    </div>
+              <Link 
+                to={`/listings?search=${encodeURIComponent('Miami')}`}
+                className="relative overflow-hidden rounded-lg group h-64 block"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?q=80&w=1000&auto=format&fit=crop" 
+                  alt="Miami" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4 flex flex-col justify-end">
+                  <h3 className="text-white text-xl font-bold">Miami</h3>
+                  <div className="flex items-center text-white/90 mt-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{cityCounts['Miami'] || 0} Properties</span>
                   </div>
-                </Link>
-              ))}
+                </div>
+              </Link>
+              
+              <Link 
+                to={`/listings?search=${encodeURIComponent('Doral')}`}
+                className="relative overflow-hidden rounded-lg group h-64 block"
+              >
+                <img 
+                  src="/lovable-uploads/fcc19195-0942-4e29-9d2a-6f9cf5bf47cb.png" 
+                  alt="Doral" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4 flex flex-col justify-end">
+                  <h3 className="text-white text-xl font-bold">Doral</h3>
+                  <div className="flex items-center text-white/90 mt-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{cityCounts['Doral'] || 0} Properties</span>
+                  </div>
+                </div>
+              </Link>
+              
+              <Link 
+                to={`/listings?search=${encodeURIComponent('Coral Gables')}`}
+                className="relative overflow-hidden rounded-lg group h-64 block"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1546636889-ba9fdd63583e?q=80&w=1000&auto=format&fit=crop" 
+                  alt="Coral Gables" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4 flex flex-col justify-end">
+                  <h3 className="text-white text-xl font-bold">Coral Gables</h3>
+                  <div className="flex items-center text-white/90 mt-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{cityCounts['Coral Gables'] || 0} Properties</span>
+                  </div>
+                </div>
+              </Link>
+              
+              <Link 
+                to={`/listings?search=${encodeURIComponent('Miami Beach')}`}
+                className="relative overflow-hidden rounded-lg group h-64 block"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1535498730771-e735b998cd64?q=80&w=1000&auto=format&fit=crop" 
+                  alt="Miami Beach" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4 flex flex-col justify-end">
+                  <h3 className="text-white text-xl font-bold">Miami Beach</h3>
+                  <div className="flex items-center text-white/90 mt-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{cityCounts['Miami Beach'] || 0} Properties</span>
+                  </div>
+                </div>
+              </Link>
             </div>
 
             <div className="mt-8 text-center">

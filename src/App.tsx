@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import Team from "./pages/Team";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import PrivateRoute from "./components/PrivateRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +28,12 @@ const App = () => (
           <Route path="/listings" element={<PropertyListings />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/videos" element={<VideoListings />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/settings" element={
+            <PrivateRoute>
+              <Settings />
+            </PrivateRoute>
+          } />
           <Route path="/contact" element={<Contact />} />
           <Route path="/team" element={<Team />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

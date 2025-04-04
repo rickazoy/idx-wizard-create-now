@@ -3,6 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { getCityPropertyCounts } from '@/services/airtable/propertyService';
 
 // Define the popular cities - these should match parts of addresses in Airtable
 const popularCities = [
@@ -14,6 +16,11 @@ const popularCities = [
 ];
 
 const PopularAreas: React.FC = () => {
+  const { data: cityCounts = {} } = useQuery({
+    queryKey: ['propertyCounts'],
+    queryFn: getCityPropertyCounts,
+  });
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -25,10 +32,15 @@ const PopularAreas: React.FC = () => {
             <li key={city.name}>
               <Link 
                 to={`/listings?search=${encodeURIComponent(city.name)}`}
-                className="flex items-center gap-2 p-2 rounded-md hover:bg-muted text-sm transition-colors"
+                className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted text-sm transition-colors"
               >
-                {city.icon}
-                <span>{city.name}</span>
+                <div className="flex items-center gap-2">
+                  {city.icon}
+                  <span>{city.name}</span>
+                </div>
+                <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
+                  {cityCounts[city.name] || 0}
+                </span>
               </Link>
             </li>
           ))}

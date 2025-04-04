@@ -371,3 +371,37 @@ export const fetchFeaturedProperties = async (): Promise<Property[]> => {
     return [];
   }
 };
+
+export const getCityPropertyCounts = async (): Promise<Record<string, number>> => {
+  try {
+    const base = getBase();
+    if (!base) return {};
+    
+    const records = await base(PROPERTY_TABLE_NAME).select().all();
+    
+    const cityCounts: Record<string, number> = {
+      'Miami': 0,
+      'Doral': 0,
+      'Coral Gables': 0,
+      'Miami Beach': 0,
+      'Sunny Isles': 0,
+    };
+    
+    records.forEach(record => {
+      const address = record.get('Property Address') as string || '';
+      
+      Object.keys(cityCounts).forEach(city => {
+        if (address.includes(city)) {
+          cityCounts[city]++;
+        }
+      });
+    });
+    
+    console.log('City property counts:', cityCounts);
+    
+    return cityCounts;
+  } catch (error) {
+    console.error('Error fetching city property counts from Airtable:', error);
+    return {};
+  }
+};

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X } from 'lucide-react';
+import { Settings, Menu } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useQuery } from '@tanstack/react-query';
+import { getAgentLogo } from '@/services/airtable';
 
 const cities = ['Miami', 'Coral Gables', 'Doral', 'Miami Beach', 'Sunny Isles'];
 
@@ -21,11 +23,27 @@ const NavigationBar: React.FC = () => {
   const isAdmin = localStorage.getItem('is_admin') === 'true';
   const location = useLocation();
   
+  const { data: logoUrl } = useQuery({
+    queryKey: ['agentLogo'],
+    queryFn: getAgentLogo,
+  });
+  
   return (
     <nav className="border-b">
       <div className="container-custom flex items-center justify-between h-16">
         <div className="flex items-center">
-          <Link to="/" className="font-semibold text-xl">Real Estate</Link>
+          <Link to="/" className="flex items-center">
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt="Company Logo" 
+                className="h-10 w-auto mr-2 object-contain"
+                style={{ maxWidth: '200px', maxHeight: '50px' }}
+              />
+            ) : (
+              <span className="font-semibold text-xl">Real Estate</span>
+            )}
+          </Link>
           
           <NavigationMenu className="ml-10 hidden md:flex">
             <NavigationMenuList>
@@ -68,17 +86,6 @@ const NavigationBar: React.FC = () => {
                     ))}
                   </ul>
                 </NavigationMenuContent>
-              </NavigationMenuItem>
-              
-              <NavigationMenuItem>
-                <Link to="/videos">
-                  <NavigationMenuLink 
-                    className={navigationMenuTriggerStyle()}
-                    active={location.pathname === '/videos'}
-                  >
-                    Videos
-                  </NavigationMenuLink>
-                </Link>
               </NavigationMenuItem>
               
               <NavigationMenuItem>
@@ -145,7 +152,6 @@ const NavigationBar: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                <Link to="/videos" className="px-2 py-1 text-lg font-semibold">Videos</Link>
                 <div>
                   <p className="px-2 py-1 text-lg font-semibold">Contact</p>
                   <div className="ml-4 flex flex-col gap-2 mt-1">
