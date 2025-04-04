@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchListingAgents, saveAirtableConfig, updateAgent } from '@/services/airtableService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Info, Upload, User } from 'lucide-react';
+import { AlertCircle, Info, Upload, User, Key } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 
@@ -46,6 +46,7 @@ const agentFormSchema = z.object({
   name: z.string().min(1, { message: 'Agent name is required' }),
   bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
   photoUrl: z.string().default(''),
+  idxApiKey: z.string().default(''), // Added IDX API Key field
 });
 
 type AirtableFormValues = z.infer<typeof airtableFormSchema>;
@@ -77,6 +78,7 @@ const Settings = () => {
       name: localStorage.getItem('agent_name') || 'Adam Johnson',
       bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida.',
       photoUrl: localStorage.getItem('agent_photo') || '/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png',
+      idxApiKey: localStorage.getItem('idx_api_key') || '',
     },
   });
 
@@ -154,13 +156,15 @@ const Settings = () => {
       localStorage.setItem('agent_name', values.name);
       localStorage.setItem('agent_bio', values.bio);
       localStorage.setItem('agent_photo', values.photoUrl);
+      localStorage.setItem('idx_api_key', values.idxApiKey); // Save IDX API key to localStorage
       
       // Also save to Airtable if we have a valid connection
       if (airtableForm.getValues('apiKey') && airtableForm.getValues('baseId')) {
         const success = await updateAgent({
           name: values.name,
           bio: values.bio,
-          photo: values.photoUrl
+          photo: values.photoUrl,
+          idx: values.idxApiKey // Include IDX API key in the update
         });
         
         if (success) {
@@ -456,6 +460,41 @@ const Settings = () => {
                                 </FormDescription>
                                 <FormMessage />
                               </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Add new IDX API Key field */}
+                        <FormField
+                          control={agentForm.control}
+                          name="idxApiKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>IDX API Key</FormLabel>
+                              <div className="flex flex-col gap-2">
+                                <div className="flex gap-2 items-center">
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="Enter your IDX API key"
+                                      {...field}
+                                      type="text"
+                                      className="flex-grow"
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormDescription>
+                                  Enter your IDX API key for property data integration
+                                </FormDescription>
+                                <FormMessage />
+                              </div>
+                              <Alert variant="outline" className="mt-2 bg-blue-50">
+                                <Key className="h-4 w-4 text-blue-500" />
+                                <AlertTitle className="text-blue-700">IDX Integration</AlertTitle>
+                                <AlertDescription className="text-blue-600">
+                                  IDX integration allows you to display MLS listings directly on your website. 
+                                  You'll need to obtain an API key from your IDX provider.
+                                </AlertDescription>
+                              </Alert>
                             </FormItem>
                           )}
                         />

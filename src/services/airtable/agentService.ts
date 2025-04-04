@@ -9,6 +9,7 @@ export interface Agent {
   bio: string;
   photo?: string;
   logo?: string;
+  idx?: string; // Added IDX field
 }
 
 // Fetch all listing agents from Airtable
@@ -87,7 +88,8 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
         name: fields['Agent Name'] as string || 'Default Agent',
         bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
         photo: photoUrl,
-        logo: logoUrl
+        logo: logoUrl,
+        idx: fields['IDX'] as string || '' // Add IDX field extraction
       };
       
       console.log('Agent data fetched successfully:', {
@@ -95,7 +97,8 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
         name: agent.name,
         bioLength: agent.bio?.length || 0,
         hasPhoto: !!agent.photo,
-        hasLogo: !!agent.logo
+        hasLogo: !!agent.logo,
+        hasIdx: !!agent.idx // Log IDX status
       });
       
       return agent;
@@ -144,6 +147,7 @@ export const updateAgent = async (agent: Omit<Agent, 'id'>): Promise<boolean> =>
       const fields: Record<string, any> = {
         'Agent Name': agent.name,
         'Agent Bio': agent.bio,
+        'IDX': agent.idx || '' // Add IDX field to update
       };
 
       // Only include photo if it's a valid URL
