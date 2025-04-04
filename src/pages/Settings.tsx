@@ -25,28 +25,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchListingAgents, saveAirtableConfig } from '@/services/airtableService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Upload, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Form validation schema
-const formSchema = z.object({
+// Form validation schema for Airtable
+const airtableFormSchema = z.object({
   apiKey: z.string().min(1, { message: 'API Token is required' }),
   baseId: z.string().min(1, { message: 'Base ID is required' }),
   listingAgentFilter: z.string().default('all'),
   isAdmin: z.boolean().default(false),
 });
 
-type SettingsFormValues = z.infer<typeof formSchema>;
+// Form validation schema for Agent
+const agentFormSchema = z.object({
+  name: z.string().min(1, { message: 'Agent name is required' }),
+  bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
+  photoUrl: z.string().default(''),
+});
+
+type AirtableFormValues = z.infer<typeof airtableFormSchema>;
+type AgentFormValues = z.infer<typeof agentFormSchema>;
 
 const Settings = () => {
   const { toast } = useToast();
   const [listingAgents, setListingAgents] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("airtable");
+  const [photoPreview, setPhotoPreview] = useState('');
 
-  // Initialize form with default values
-  const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(formSchema),
+  // Initialize Airtable form with default values
+  const airtableForm = useForm<AirtableFormValues>({
+    resolver: zodResolver(airtableFormSchema),
     defaultValues: {
       apiKey: localStorage.getItem('airtable_api_key') || '',
       baseId: localStorage.getItem('airtable_base_id') || '',
@@ -55,11 +68,26 @@ const Settings = () => {
     },
   });
 
+  // Initialize Agent form with default values
+  const agentForm = useForm<AgentFormValues>({
+    resolver: zodResolver(agentFormSchema),
+    defaultValues: {
+      name: localStorage.getItem('agent_name') || 'Adam Johnson',
+      bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida.',
+      photoUrl: localStorage.getItem('agent_photo') || '/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png',
+    },
+  });
+
+  // Set photo preview when the component loads
+  useEffect(() => {
+    setPhotoPreview(agentForm.watch('photoUrl'));
+  }, [agentForm.watch('photoUrl')]);
+
   // Fetch listing agents when form values change and user is admin
   useEffect(() => {
-    const apiKey = form.watch('apiKey');
-    const baseId = form.watch('baseId');
-    const isAdmin = form.watch('isAdmin');
+    const apiKey = airtableForm.watch('apiKey');
+    const baseId = airtableForm.watch('baseId');
+    const isAdmin = airtableForm.watch('isAdmin');
     
     const loadListingAgents = async () => {
       if (apiKey && baseId && isAdmin) {
@@ -82,9 +110,9 @@ const Settings = () => {
     };
 
     loadListingAgents();
-  }, [form.watch('apiKey'), form.watch('baseId'), form.watch('isAdmin'), toast]);
+  }, [airtableForm.watch('apiKey'), airtableForm.watch('baseId'), airtableForm.watch('isAdmin'), toast]);
 
-  const onSubmit = async (values: SettingsFormValues) => {
+  const onSubmitAirtable = async (values: AirtableFormValues) => {
     setIsLoading(true);
     try {
       // Save config to localStorage
@@ -117,152 +145,289 @@ const Settings = () => {
     }
   };
 
+  const onSubmitAgent = async (values: AgentFormValues) => {
+    setIsLoading(true);
+    try {
+      // Save agent info to localStorage
+      localStorage.setItem('agent_name', values.name);
+      localStorage.setItem('agent_bio', values.bio);
+      localStorage.setItem('agent_photo', values.photoUrl);
+      
+      toast({
+        title: 'Agent Settings Saved',
+        description: 'Your agent information has been updated successfully.',
+      });
+    } catch (error) {
+      console.error('Error saving agent settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save agent information.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container-custom py-12">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Settings</h1>
         
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Airtable Connection</CardTitle>
-            <CardDescription>
-              Configure your Airtable API connection for property listings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Alert className="mb-6">
-              <Info className="h-5 w-5" />
-              <AlertTitle>Important Setup Information</AlertTitle>
-              <AlertDescription>
-                <p className="text-sm mb-2">
-                  This application is configured to work with a table named <strong>"Property Management System Listings"</strong> in your Airtable base.
-                </p>
-                <p className="text-sm">
-                  Make sure your Airtable base contains this table name exactly as written, with a <strong>"Listing Agent"</strong> field for filtering.
-                </p>
-              </AlertDescription>
-            </Alert>
-            
-            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-amber-800">Important Airtable Setup Information</h3>
-                  <p className="text-sm text-amber-700 mt-1">
-                    Make sure you have:
-                  </p>
-                  <ul className="text-sm text-amber-700 list-disc list-inside mt-1 space-y-1">
-                    <li>Created a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="underline">Airtable account</a></li>
-                    <li>Copied the correct Base ID (it should start with "app")</li>
-                    <li>A table named <strong>"Property Management System Listings"</strong> in your base</li>
-                    <li>A <strong>"Listing Agent"</strong> field in your table (for filtering properties by agent)</li>
-                    <li>Other required fields set up in your table (Property Address, Listing Price, etc.)</li>
-                  </ul>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+          <TabsList className="w-full justify-start mb-6">
+            <TabsTrigger value="airtable">Airtable Connection</TabsTrigger>
+            <TabsTrigger value="agent">Agent Profile</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="airtable">
+            <Card>
+              <CardHeader>
+                <CardTitle>Airtable Connection</CardTitle>
+                <CardDescription>
+                  Configure your Airtable API connection for property listings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert className="mb-6">
+                  <Info className="h-5 w-5" />
+                  <AlertTitle>Important Setup Information</AlertTitle>
+                  <AlertDescription>
+                    <p className="text-sm mb-2">
+                      This application is configured to work with a table named <strong>"Property Management System Listings"</strong> in your Airtable base.
+                    </p>
+                    <p className="text-sm">
+                      Make sure your Airtable base contains this table name exactly as written, with a <strong>"Listing Agent"</strong> field for filtering.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+                    <div>
+                      <h3 className="font-medium text-amber-800">Important Airtable Setup Information</h3>
+                      <p className="text-sm text-amber-700 mt-1">
+                        Make sure you have:
+                      </p>
+                      <ul className="text-sm text-amber-700 list-disc list-inside mt-1 space-y-1">
+                        <li>Created a Personal Access Token in your <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="underline">Airtable account</a></li>
+                        <li>Copied the correct Base ID (it should start with "app")</li>
+                        <li>A table named <strong>"Property Management System Listings"</strong> in your base</li>
+                        <li>A <strong>"Listing Agent"</strong> field in your table (for filtering properties by agent)</li>
+                        <li>Other required fields set up in your table (Property Address, Listing Price, etc.)</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="isAdmin"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Admin Mode</FormLabel>
-                        <FormDescription>
-                          Enable admin features for Airtable configuration
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
                 
-                <FormField
-                  control={form.control}
-                  name="apiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>API Token</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Your Airtable Personal Access Token" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Enter your Airtable Personal Access Token
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="baseId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Base ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Your Airtable Base ID (starts with 'app')" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        The ID of your Airtable base containing the "Property Management System Listings" table
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {form.watch('isAdmin') && (
-                  <FormField
-                    control={form.control}
-                    name="listingAgentFilter"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Filter by Listing Agent</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          disabled={listingAgents.length === 0}
-                        >
+                <Form {...airtableForm}>
+                  <form onSubmit={airtableForm.handleSubmit(onSubmitAirtable)} className="space-y-6">
+                    <FormField
+                      control={airtableForm.control}
+                      name="isAdmin"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Admin Mode</FormLabel>
+                            <FormDescription>
+                              Enable admin features for Airtable configuration
+                            </FormDescription>
+                          </div>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a listing agent (optional)" />
-                            </SelectTrigger>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="all">All Agents</SelectItem>
-                            {listingAgents.map((agent) => (
-                              <SelectItem key={agent} value={agent}>
-                                {agent}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Filter property listings by a specific agent (uses the "Listing Agent" field)
-                          {listingAgents.length === 0 && form.watch('apiKey') && form.watch('baseId') && 
-                            " - No listing agents found, please ensure your Airtable has a 'Listing Agent' field"}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={airtableForm.control}
+                      name="apiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>API Token</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your Airtable Personal Access Token" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Enter your Airtable Personal Access Token
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={airtableForm.control}
+                      name="baseId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Base ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your Airtable Base ID (starts with 'app')" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            The ID of your Airtable base containing the "Property Management System Listings" table
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {airtableForm.watch('isAdmin') && (
+                      <FormField
+                        control={airtableForm.control}
+                        name="listingAgentFilter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Filter by Listing Agent</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              disabled={listingAgents.length === 0}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a listing agent (optional)" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="all">All Agents</SelectItem>
+                                {listingAgents.map((agent) => (
+                                  <SelectItem key={agent} value={agent}>
+                                    {agent}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Filter property listings by a specific agent (uses the "Listing Agent" field)
+                              {listingAgents.length === 0 && airtableForm.watch('apiKey') && airtableForm.watch('baseId') && 
+                                " - No listing agents found, please ensure your Airtable has a 'Listing Agent' field"}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                )}
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Settings'}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Saving...' : 'Save Airtable Settings'}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="agent">
+            <Card>
+              <CardHeader>
+                <CardTitle>Agent Profile</CardTitle>
+                <CardDescription>
+                  Configure the featured agent that appears on the homepage
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...agentForm}>
+                  <form onSubmit={agentForm.handleSubmit(onSubmitAgent)} className="space-y-6">
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                      <div className="w-full md:w-2/3 space-y-6">
+                        <FormField
+                          control={agentForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Agent Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter agent name" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                The name that will be displayed in the agent section
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={agentForm.control}
+                          name="bio"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Agent Bio</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Enter agent biography" 
+                                  className="min-h-[120px]"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                A short biography describing the agent's experience and expertise
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={agentForm.control}
+                          name="photoUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Photo URL</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Enter URL to agent photo" 
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setPhotoPreview(e.target.value);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                The URL to the agent's photo (use the Upload button in Lovable to upload a photo and get its URL)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="w-full md:w-1/3 flex flex-col items-center justify-start gap-3">
+                        <p className="text-sm text-muted-foreground mb-2">Photo Preview</p>
+                        <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden border">
+                          {photoPreview ? (
+                            <img 
+                              src={photoPreview} 
+                              alt="Agent" 
+                              className="w-full h-full object-cover"
+                              onError={() => setPhotoPreview('')}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted">
+                              <User className="h-20 w-20 text-muted-foreground/40" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Saving...' : 'Save Agent Settings'}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
