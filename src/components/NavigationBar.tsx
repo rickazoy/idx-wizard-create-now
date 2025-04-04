@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,8 +36,12 @@ const NavigationBar: React.FC = () => {
               <img 
                 src={logoUrl} 
                 alt="Company Logo" 
-                className="h-10 w-auto mr-2 object-contain"
-                style={{ maxWidth: '500px', maxHeight: '500px' }}
+                className="w-auto mr-2 object-contain"
+                style={{ 
+                  width: '300px',
+                  height: 'auto',
+                  maxHeight: '64px' // Match the navbar height (h-16 = 64px)
+                }}
               />
             ) : (
               <span className="font-semibold text-xl">Real Estate</span>
@@ -125,7 +128,6 @@ const NavigationBar: React.FC = () => {
           </NavigationMenu>
         </div>
         
-        {/* Mobile Menu */}
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
