@@ -1,109 +1,151 @@
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Copy, Server } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-const ApiEndpoint: React.FC = () => {
-  const { toast } = useToast();
-  const [tenantId, setTenantId] = useState(localStorage.getItem('tenantId') || '');
-  
-  // Generate the base URL for this application
-  const baseUrl = window.location.origin;
-  const exampleUrl = `${baseUrl}/?tenantId=${tenantId || 'your-tenant-id'}&idxApiKey=YOUR_IDX_API_KEY&airtableApiKey=YOUR_AIRTABLE_API_KEY&baseId=YOUR_BASE_ID`;
-  
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(exampleUrl);
-    toast({
-      title: 'URL Copied',
-      description: 'The example URL has been copied to your clipboard',
-    });
-  };
-  
-  const handleSaveTenantId = () => {
-    if (tenantId) {
-      localStorage.setItem('tenantId', tenantId);
-      toast({
-        title: 'Tenant ID Saved',
-        description: 'The tenant ID has been saved and will be used for Airtable configuration',
-      });
-    } else {
-      localStorage.removeItem('tenantId');
-      toast({
-        title: 'Tenant ID Cleared',
-        description: 'The tenant ID has been removed',
-      });
-    }
-  };
-
+// Add documentation for the new parameters for app name and template ID
+const ApiEndpoint = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Server className="h-5 w-5" />
-          n8n API Integration
-        </CardTitle>
+        <CardTitle>API Integration Guide</CardTitle>
         <CardDescription>
-          Configure this application for automated deployment with n8n
+          Use these endpoints to integrate with n8n or other automation tools
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Important Integration Information</AlertTitle>
+          <AlertDescription>
+            This application provides URL parameter-based configuration for easy integration with n8n and other automation platforms.
+          </AlertDescription>
+        </Alert>
+        
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Your Tenant ID</h3>
-          <div className="flex gap-2">
-            <Input 
-              value={tenantId}
-              onChange={(e) => setTenantId(e.target.value)}
-              placeholder="Enter your tenant ID"
-              className="flex-1"
-            />
-            <Button onClick={handleSaveTenantId}>
-              Save
-            </Button>
+          <h3 className="text-lg font-medium">Deployment Parameters</h3>
+          <p className="text-sm text-muted-foreground">
+            These parameters can be used to deploy and configure new instances of this application.
+          </p>
+          
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Parameter</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Example</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-mono">tenantId</TableCell>
+                <TableCell>Unique identifier for this deployment</TableCell>
+                <TableCell className="font-mono">client-123</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">appName</TableCell>
+                <TableCell>Name for the deployed application</TableCell>
+                <TableCell className="font-mono">Client Real Estate</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">templateId</TableCell>
+                <TableCell>ID of the template being used (current app)</TableCell>
+                <TableCell className="font-mono">idx-wizard-template</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">idxApiKey</TableCell>
+                <TableCell>IDX Broker API key</TableCell>
+                <TableCell className="font-mono">abc123...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">outputType</TableCell>
+                <TableCell>IDX API output format</TableCell>
+                <TableCell className="font-mono">json</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">apiVersion</TableCell>
+                <TableCell>IDX API version</TableCell>
+                <TableCell className="font-mono">1.2.2</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">ancillaryKey</TableCell>
+                <TableCell>Optional ancillary key for IDX</TableCell>
+                <TableCell className="font-mono">xyz789...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">airtableApiKey</TableCell>
+                <TableCell>Airtable API token</TableCell>
+                <TableCell className="font-mono">pat...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">baseId</TableCell>
+                <TableCell>Airtable Base ID</TableCell>
+                <TableCell className="font-mono">app...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">agentFilter</TableCell>
+                <TableCell>Filter by listing agent (optional)</TableCell>
+                <TableCell className="font-mono">John Smith</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">agentName</TableCell>
+                <TableCell>Featured agent name</TableCell>
+                <TableCell className="font-mono">Jane Doe</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">agentBio</TableCell>
+                <TableCell>Featured agent biography</TableCell>
+                <TableCell className="font-mono">Real estate expert...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">agentPhoto</TableCell>
+                <TableCell>URL to agent's photo</TableCell>
+                <TableCell className="font-mono">https://...</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">isAdmin</TableCell>
+                <TableCell>Enable admin features</TableCell>
+                <TableCell className="font-mono">true</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Example Usage</h3>
+          <div className="p-4 bg-muted rounded-md">
+            <pre className="text-xs overflow-auto whitespace-pre-wrap">
+              https://your-app-url.com/?tenantId=client123&appName=Client%20Real%20Estate&templateId=idx-wizard&idxApiKey=abc123&airtableApiKey=pat123&baseId=app123&agentName=Jane%20Doe
+            </pre>
           </div>
-          <p className="text-xs text-muted-foreground">
-            This ID links your application to the configuration stored in Airtable
+          <p className="text-sm text-muted-foreground mt-2">
+            This URL will initialize the application with the specified configuration parameters.
           </p>
         </div>
         
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Example URL for n8n</h3>
-          <div className="relative">
-            <Input 
-              value={exampleUrl}
-              readOnly
-              className="pr-10 font-mono text-xs"
-            />
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute right-0 top-0" 
-              onClick={handleCopyUrl}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Use this URL format in your n8n workflow to configure the application via URL parameters
-          </p>
-        </div>
-        
-        <div className="bg-secondary/30 p-3 rounded-md space-y-2">
-          <h3 className="text-sm font-medium">Available URL Parameters</h3>
-          <ul className="text-xs space-y-1 text-muted-foreground">
-            <li><code>tenantId</code> - Unique identifier for this instance</li>
-            <li><code>idxApiKey</code> - IDX Broker API Key</li>
-            <li><code>outputType</code> - IDX Output format (json, xml)</li>
-            <li><code>apiVersion</code> - IDX API Version</li>
-            <li><code>ancillaryKey</code> - IDX Ancillary Key</li>
-            <li><code>airtableApiKey</code> - Airtable API Token</li>
-            <li><code>baseId</code> - Airtable Base ID</li>
-            <li><code>agentFilter</code> - Agent filter for properties</li>
-            <li><code>agentName</code> - Agent display name</li>
-            <li><code>agentBio</code> - Agent biography</li>
-            <li><code>agentPhoto</code> - URL to agent photo</li>
+          <h3 className="text-lg font-medium">n8n Integration Tips</h3>
+          <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+            <li>Use the HTTP Request node to call this URL with your parameters</li>
+            <li>Set up dynamic parameters based on your client data</li>
+            <li>Add the URL to your deployment workflow</li>
+            <li>Use the template system by setting the templateId parameter to reference this app</li>
           </ul>
         </div>
       </CardContent>

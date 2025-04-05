@@ -1,3 +1,4 @@
+
 /**
  * Configuration Service
  * Handles retrieving and setting configuration values from both localStorage and Airtable
@@ -24,6 +25,10 @@ export interface ConfigSettings {
   
   // Other Settings
   is_admin: string; // Changed from boolean to string since localStorage stores strings
+  
+  // Deployment Settings
+  app_name?: string;
+  template_id?: string;
 }
 
 // Airtable table name for configuration
@@ -116,6 +121,8 @@ async function getConfigFromAirtable(key: keyof ConfigSettings, tenantId: string
       agent_bio: 'Agent Bio',
       agent_photo: 'Agent Photo',
       is_admin: 'Is Admin',
+      app_name: 'App Name',
+      template_id: 'Template ID'
     };
     
     const airtableField = fieldMapping[key];
@@ -156,6 +163,8 @@ async function updateAirtableConfig(key: keyof ConfigSettings, value: string, te
       agent_bio: 'Agent Bio',
       agent_photo: 'Agent Photo',
       is_admin: 'Is Admin',
+      app_name: 'App Name',
+      template_id: 'Template ID'
     };
     
     const airtableField = fieldMapping[key];
@@ -197,6 +206,8 @@ export async function getAllConfig(tenantId?: string): Promise<Partial<ConfigSet
     'agent_bio',
     'agent_photo',
     'is_admin',
+    'app_name',
+    'template_id'
   ];
   
   // For each key, get the value using our priority system
@@ -232,6 +243,8 @@ export function initConfigFromUrl(): void {
     agentBio: 'agent_bio',
     agentPhoto: 'agent_photo',
     isAdmin: 'is_admin',
+    appName: 'app_name',
+    templateId: 'template_id'
   };
   
   // Process each parameter and save to localStorage
