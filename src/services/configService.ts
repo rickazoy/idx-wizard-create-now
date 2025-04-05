@@ -1,264 +1,242 @@
 
-/**
- * Configuration Service
- * Handles retrieving and setting configuration values from both localStorage and Airtable
- */
+import { toast } from 'sonner';
 
-import { getBase } from './airtable/airtableCore';
-
+// Define configuration settings types
 export interface ConfigSettings {
-  // IDX Settings
-  idx_api_key: string;
-  idx_output_type: string;
-  idx_api_version: string;
+  idx_api_key?: string;
+  idx_api_version?: string; 
   idx_ancillary_key?: string;
-  
-  // Airtable Settings
-  airtable_api_key: string;
-  airtable_base_id: string;
+  airtable_api_key?: string;
+  airtable_base_id?: string;
   airtable_agent_filter?: string;
-  
-  // Agent Settings
-  agent_name: string;
-  agent_bio: string;
-  agent_photo: string;
-  
-  // Other Settings
-  is_admin: string; // Changed from boolean to string since localStorage stores strings
-  
-  // Deployment Settings
-  app_name?: string;
-  template_id?: string;
-}
-
-// Airtable table name for configuration
-const CONFIG_TABLE_NAME = 'Lovable';
-
-/**
- * Get configuration value with fallback priorities:
- * 1. URL parameters (highest priority)
- * 2. Airtable config (if available)
- * 3. localStorage (always available as fallback)
- */
-export async function getConfigValue(key: keyof ConfigSettings, tenantId?: string): Promise<string> {
-  // First check URL parameters (highest priority)
-  const urlParams = new URLSearchParams(window.location.search);
-  const paramValue = urlParams.get(key);
-  if (paramValue) {
-    console.log(`[Config] Using URL parameter for ${key}`);
-    return paramValue;
-  }
-  
-  // Next, try to get from Airtable if tenantId is provided
-  if (tenantId) {
-    try {
-      const airtableValue = await getConfigFromAirtable(key, tenantId);
-      if (airtableValue) {
-        console.log(`[Config] Using Airtable value for ${key}`);
-        return airtableValue;
-      }
-    } catch (error) {
-      console.warn(`[Config] Error fetching from Airtable for ${key}:`, error);
-    }
-  }
-  
-  // Finally, fall back to localStorage
-  const localValue = localStorage.getItem(key) || '';
-  console.log(`[Config] Using localStorage value for ${key}`);
-  return localValue;
+  api_key?: string;
 }
 
 /**
- * Set configuration value in both localStorage and Airtable (if available)
+ * Initialize configuration from URL parameters
+ * This allows headless setup of the application via URL
  */
-export async function setConfigValue(key: keyof ConfigSettings, value: string, tenantId?: string): Promise<boolean> {
-  // Always update localStorage
-  localStorage.setItem(key, value);
-  
-  // Update Airtable if tenantId is provided
-  if (tenantId) {
-    try {
-      await updateAirtableConfig(key, value, tenantId);
-      return true;
-    } catch (error) {
-      console.error(`[Config] Error updating Airtable for ${key}:`, error);
-      return false;
-    }
-  }
-  
-  return true;
-}
-
-/**
- * Fetch configuration from Airtable by tenant ID
- */
-async function getConfigFromAirtable(key: keyof ConfigSettings, tenantId: string): Promise<string> {
-  const base = getBase();
-  if (!base) throw new Error("Airtable base not initialized");
-  
+export const initConfigFromUrl = () => {
   try {
-    const records = await base(CONFIG_TABLE_NAME)
-      .select({
-        filterByFormula: `{TenantID} = "${tenantId}"`,
-        maxRecords: 1,
-      })
-      .firstPage();
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    
+    // Check for API key parameter
+    const apiKey = params.get('api_key');
+    if (apiKey) {
+      localStorage.setItem('api_key', apiKey);
+      console.log('API key set from URL parameter');
+    }
+    
+    // Check for IDX parameters
+    const idxApiKey = params.get('idx_api_key');
+    const idxApiVersion = params.get('idx_api_version');
+    const idxAncillaryKey = params.get('idx_ancillary_key');
+    
+    if (idxApiKey) {
+      localStorage.setItem('idx_api_key', idxApiKey);
+      console.log('IDX API key set from URL parameter');
+    }
+    
+    if (idxApiVersion) {
+      localStorage.setItem('idx_api_version', idxApiVersion);
+    }
+    
+    if (idxAncillaryKey) {
+      localStorage.setItem('idx_ancillary_key', idxAncillaryKey);
+    }
+    
+    // Check for Airtable parameters
+    const airtableApiKey = params.get('airtable_api_key');
+    const airtableBaseId = params.get('airtable_base_id');
+    const airtableAgentFilter = params.get('airtable_agent_filter');
+    
+    if (airtableApiKey) {
+      localStorage.setItem('airtable_api_key', airtableApiKey);
+      console.log('Airtable API key set from URL parameter');
+    }
+    
+    if (airtableBaseId) {
+      localStorage.setItem('airtable_base_id', airtableBaseId);
+    }
+    
+    if (airtableAgentFilter) {
+      localStorage.setItem('airtable_agent_filter', airtableAgentFilter);
+    }
+    
+    // Agent configuration from URL
+    const agentName = params.get('agent_name');
+    const agentBio = params.get('agent_bio');
+    const agentPhoto = params.get('agent_photo');
+    
+    if (agentName) {
+      localStorage.setItem('agent_name', agentName);
+    }
+    
+    if (agentBio) {
+      localStorage.setItem('agent_bio', agentBio);
+    }
+    
+    if (agentPhoto) {
+      localStorage.setItem('agent_photo', agentPhoto);
+    }
+
+    // If we have set any configuration parameters, show a toast notification
+    if (params.has('idx_api_key') || params.has('airtable_api_key') || params.has('api_key')) {
+      toast.success('Configuration updated from URL parameters');
       
-    if (records.length === 0) {
-      throw new Error(`No configuration found for tenant: ${tenantId}`);
-    }
-    
-    // Map Airtable field names to our config keys
-    const fieldMapping: Record<keyof ConfigSettings, string> = {
-      idx_api_key: 'IDX API Key',
-      idx_output_type: 'Output Type',
-      idx_api_version: 'API Version',
-      idx_ancillary_key: 'Ancillary Key',
-      airtable_api_key: 'Airtable API Token',
-      airtable_base_id: 'Base ID',
-      airtable_agent_filter: 'Filter by Listing Agent',
-      agent_name: 'Agent Name',
-      agent_bio: 'Agent Bio',
-      agent_photo: 'Agent Photo',
-      is_admin: 'Is Admin',
-      app_name: 'App Name',
-      template_id: 'Template ID'
-    };
-    
-    const airtableField = fieldMapping[key];
-    const value = records[0].get(airtableField) || '';
-    return value.toString();
-  } catch (error) {
-    console.error('Error fetching config from Airtable:', error);
-    throw error;
-  }
-}
-
-/**
- * Update configuration in Airtable
- */
-async function updateAirtableConfig(key: keyof ConfigSettings, value: string, tenantId: string): Promise<void> {
-  const base = getBase();
-  if (!base) throw new Error("Airtable base not initialized");
-  
-  try {
-    // Find the record for this tenant
-    const records = await base(CONFIG_TABLE_NAME)
-      .select({
-        filterByFormula: `{TenantID} = "${tenantId}"`,
-        maxRecords: 1,
-      })
-      .firstPage();
-    
-    // Map config keys to Airtable field names
-    const fieldMapping: Record<keyof ConfigSettings, string> = {
-      idx_api_key: 'IDX API Key',
-      idx_output_type: 'Output Type',
-      idx_api_version: 'API Version',
-      idx_ancillary_key: 'Ancillary Key',
-      airtable_api_key: 'Airtable API Token',
-      airtable_base_id: 'Base ID',
-      airtable_agent_filter: 'Filter by Listing Agent',
-      agent_name: 'Agent Name',
-      agent_bio: 'Agent Bio',
-      agent_photo: 'Agent Photo',
-      is_admin: 'Is Admin',
-      app_name: 'App Name',
-      template_id: 'Template ID'
-    };
-    
-    const airtableField = fieldMapping[key];
-    
-    if (records.length > 0) {
-      // Update existing record
-      await base(CONFIG_TABLE_NAME).update(records[0].id, {
-        [airtableField]: value,
-      });
-    } else {
-      // Create new record for this tenant
-      await base(CONFIG_TABLE_NAME).create({
-        'TenantID': tenantId,
-        [airtableField]: value,
-      });
+      // Force reload to apply new settings
+      if (!params.has('no_reload')) {
+        window.location.href = window.location.origin + window.location.pathname;
+      }
     }
   } catch (error) {
-    console.error('Error updating config in Airtable:', error);
-    throw error;
+    console.error('Error initializing config from URL:', error);
   }
-}
+};
 
-/**
- * Get all configuration values for a tenant
- */
-export async function getAllConfig(tenantId?: string): Promise<Partial<ConfigSettings>> {
-  const config: Partial<ConfigSettings> = {};
-  
-  // Get all keys from localStorage first
-  const keys: (keyof ConfigSettings)[] = [
-    'idx_api_key',
-    'idx_output_type',
-    'idx_api_version',
-    'idx_ancillary_key',
-    'airtable_api_key',
-    'airtable_base_id',
-    'airtable_agent_filter',
-    'agent_name',
-    'agent_bio',
-    'agent_photo',
-    'is_admin',
-    'app_name',
-    'template_id'
-  ];
-  
-  // For each key, get the value using our priority system
-  for (const key of keys) {
-    try {
-      config[key] = await getConfigValue(key, tenantId);
-    } catch (error) {
-      console.warn(`Error getting config value for ${key}:`, error);
-    }
-  }
-  
-  return config;
-}
+// Get a configuration value
+export const getConfigValue = (key: keyof ConfigSettings): string | null => {
+  return localStorage.getItem(key) || null;
+};
 
-/**
- * Initialize configuration from URL parameters and save to localStorage
- * This is useful for n8n deployments where config is passed via URL
- */
-export function initConfigFromUrl(): void {
-  const urlParams = new URLSearchParams(window.location.search);
-  const tenantId = urlParams.get('tenantId');
-  
-  // Map URL parameters to localStorage
-  const paramMap: Record<string, keyof ConfigSettings> = {
-    idxApiKey: 'idx_api_key',
-    outputType: 'idx_output_type',
-    apiVersion: 'idx_api_version',
-    ancillaryKey: 'idx_ancillary_key',
-    airtableApiKey: 'airtable_api_key',
-    baseId: 'airtable_base_id',
-    agentFilter: 'airtable_agent_filter',
-    agentName: 'agent_name',
-    agentBio: 'agent_bio',
-    agentPhoto: 'agent_photo',
-    isAdmin: 'is_admin',
-    appName: 'app_name',
-    templateId: 'template_id'
+// Set a configuration value
+export const setConfigValue = (key: keyof ConfigSettings, value: string): void => {
+  localStorage.setItem(key, value);
+};
+
+// Clear a configuration value
+export const clearConfigValue = (key: keyof ConfigSettings): void => {
+  localStorage.removeItem(key);
+};
+
+// Check if API configuration is complete
+export const isApiConfigured = (): boolean => {
+  return !!getConfigValue('api_key');
+};
+
+// Check if IDX configuration is complete
+export const isIdxConfigured = (): boolean => {
+  return !!getConfigValue('idx_api_key');
+};
+
+// Check if Airtable configuration is complete
+export const isAirtableConfigured = (): boolean => {
+  return !!getConfigValue('airtable_api_key') && !!getConfigValue('airtable_base_id');
+};
+
+// Export configuration as JSON
+export const exportConfig = (): ConfigSettings => {
+  return {
+    idx_api_key: getConfigValue('idx_api_key'),
+    idx_api_version: getConfigValue('idx_api_version'),
+    idx_ancillary_key: getConfigValue('idx_ancillary_key'),
+    airtable_api_key: getConfigValue('airtable_api_key'),
+    airtable_base_id: getConfigValue('airtable_base_id'),
+    airtable_agent_filter: getConfigValue('airtable_agent_filter'),
+    api_key: getConfigValue('api_key')
   };
-  
-  // Process each parameter and save to localStorage
-  Object.entries(paramMap).forEach(([paramName, storageKey]) => {
-    const value = urlParams.get(paramName);
-    if (value) {
-      localStorage.setItem(storageKey, value);
-      console.log(`[Config] Initialized ${storageKey} from URL parameter`);
-    }
-  });
-  
-  // Save tenant ID if provided
-  if (tenantId) {
-    localStorage.setItem('tenantId', tenantId);
-    console.log(`[Config] Tenant ID set to ${tenantId}`);
+};
+
+// Import configuration from JSON
+export const importConfig = (config: ConfigSettings): void => {
+  try {
+    if (config.idx_api_key) setConfigValue('idx_api_key', config.idx_api_key);
+    if (config.idx_api_version) setConfigValue('idx_api_version', config.idx_api_version);
+    if (config.idx_ancillary_key) setConfigValue('idx_ancillary_key', config.idx_ancillary_key);
+    if (config.airtable_api_key) setConfigValue('airtable_api_key', config.airtable_api_key);
+    if (config.airtable_base_id) setConfigValue('airtable_base_id', config.airtable_base_id);
+    if (config.airtable_agent_filter) setConfigValue('airtable_agent_filter', config.airtable_agent_filter);
+    if (config.api_key) setConfigValue('api_key', config.api_key);
+    
+    toast.success('Configuration imported successfully');
+  } catch (error) {
+    console.error('Error importing configuration:', error);
+    toast.error('Failed to import configuration');
   }
-}
+};
+
+// Generate a new API key
+export const generateApiKey = (): string => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const length = 32;
+  let result = '';
+  
+  const randomValues = new Uint8Array(length);
+  if (typeof window !== 'undefined') {
+    window.crypto.getRandomValues(randomValues);
+    
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(randomValues[i] % characters.length);
+    }
+  } else {
+    // Fallback for non-browser environments
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+  }
+  
+  return result;
+};
+
+// Handle API request with configuration
+export const handleConfigApiRequest = async (req: Request): Promise<Response> => {
+  const apiKey = req.headers.get('X-API-Key');
+  const storedApiKey = getConfigValue('api_key');
+  
+  // Check if API key is valid
+  if (!apiKey || !storedApiKey || apiKey !== storedApiKey) {
+    return new Response(JSON.stringify({ error: 'Invalid or missing API key' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  
+  // Process the request based on method
+  if (req.method === 'GET') {
+    // Return the current configuration
+    return new Response(JSON.stringify(exportConfig()), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  
+  if (req.method === 'POST') {
+    try {
+      // Update configuration with the provided values
+      const body = await req.json();
+      importConfig(body);
+      
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+  
+  // Method not allowed
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+    status: 405,
+    headers: { 'Content-Type': 'application/json' }
+  });
+};
+
+// Save configuration to localStorage
+export const saveToLocalStorage = (key: string, value: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, value);
+  }
+};
+
+// Get configuration from localStorage
+export const getFromLocalStorage = (key: string): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+};
