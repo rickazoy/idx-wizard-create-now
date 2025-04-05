@@ -1,3 +1,4 @@
+
 import { Property } from '@/components/PropertyCard';
 
 export interface IDXProperty {
@@ -68,17 +69,39 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
 
 export const fetchIDXProperties = async (): Promise<Property[]> => {
   try {
-    const apiKey = localStorage.getItem('idx_api_key');
-    if (!apiKey) {
+    const idxApiKey = localStorage.getItem('idx_api_key');
+    const idxApiOutputType = localStorage.getItem('idx_output_type') || 'json';
+    const idxApiVersion = localStorage.getItem('idx_api_version') || '1.2.2';
+    const idxAncillaryKey = localStorage.getItem('idx_ancillary_key');
+    
+    if (!idxApiKey) {
       throw new Error('IDX API key not found');
     }
-
+    
+    // Build headers according to IDX Broker documentation
+    const headers: HeadersInit = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'accesskey': idxApiKey
+    };
+    
+    // Add optional headers if available
+    if (idxApiOutputType) {
+      headers['outputtype'] = idxApiOutputType;
+    }
+    
+    if (idxApiVersion) {
+      headers['apiversion'] = idxApiVersion;
+    }
+    
+    if (idxAncillaryKey) {
+      headers['ancillarykey'] = idxAncillaryKey;
+    }
+    
+    // For development testing, we'll add a small delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const response = await fetch('/api/idx/properties', {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      }
+      headers: headers
     });
     
     if (!response.ok) {

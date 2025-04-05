@@ -28,6 +28,10 @@ export default defineConfig(({ mode }) => ({
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             console.log('Sending Request:', req.method, req.url);
+            
+            // Log headers being sent to IDX API
+            const headers = proxyReq.getHeaders();
+            console.log('Request Headers:', headers);
           });
           proxy.on('proxyRes', (_proxyRes, req, _res) => {
             console.log('Received Response:', req.method, req.url);
@@ -35,7 +39,7 @@ export default defineConfig(({ mode }) => ({
         },
         // Mock the response - fixed return type
         bypass: (req, res, _options) => { 
-          const idxApiKey = req.headers.authorization?.split(' ')[1];
+          const idxApiKey = req.headers.accesskey || req.headers.authorization?.split(' ')[1];
           
           if (req.url === '/api/idx/properties' && idxApiKey) {
             // Send mock IDX data
@@ -129,6 +133,9 @@ export default defineConfig(({ mode }) => ({
                 }
               }
             };
+            
+            // Log received headers for debugging
+            console.log('Received headers:', req.headers);
             
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(mockData));
