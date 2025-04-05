@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc' // Using react-swc plugin that's likely already installed
 import path from 'path'
@@ -142,6 +141,50 @@ export default defineConfig(({ mode }) => ({
             return true as any; // Using type assertion to fix the error
           }
           
+          return false as any; // Using type assertion to fix the error
+        }
+      },
+      // New custom API endpoint for configuration
+      '/api/config': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err);
+          });
+        },
+        bypass: (req, res) => {
+          if (req.url.startsWith('/api/config')) {
+            // Import is dynamic to avoid issues with SSR/ESM
+            import('./src/services/restApiService').then(module => {
+              const { handleApiRequest } = module;
+              
+              // Create a Request object from the req
+              const request = new Request(`http://localhost:8080${req.url}`, {
+                method: req.method,
+                headers: req.headers as any,
+                body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
+              });
+              
+              // Handle the request with our API handler
+              handleApiRequest(request).then(response => {
+                // Set status code
+                res.statusCode = response.status;
+                
+                // Set headers
+                response.headers.forEach((value, key) => {
+                  res.setHeader(key, value);
+                });
+                
+                // Send body
+                response.text().then(body => {
+                  res.end(body);
+                });
+              });
+              
+              return true as any; // Using type assertion to fix the error
+            });
+          }
           return false as any; // Using type assertion to fix the error
         }
       }
