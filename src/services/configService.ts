@@ -23,7 +23,7 @@ export interface ConfigSettings {
   agent_photo: string;
   
   // Other Settings
-  is_admin: boolean;
+  is_admin: string; // Changed from boolean to string since localStorage stores strings
 }
 
 // Airtable table name for configuration
