@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc' // Using react-swc plugin that's likely already installed
 import path from 'path'
@@ -40,7 +41,7 @@ export default defineConfig(({ mode }) => ({
         bypass: (req, res, _options) => { 
           const idxApiKey = req.headers.accesskey || req.headers.authorization?.split(' ')[1];
           
-          if (req.url === '/api/idx/properties' && idxApiKey) {
+          if (req.url && req.url === '/api/idx/properties' && idxApiKey) {
             // Send mock IDX data
             const mockData = {
               "a000!%5362657": {
@@ -154,7 +155,7 @@ export default defineConfig(({ mode }) => ({
           });
         },
         bypass: (req, res) => {
-          if (req.url.startsWith('/api/config')) {
+          if (req.url && req.url.startsWith('/api/config')) {
             // Import is dynamic to avoid issues with SSR/ESM
             import('./src/services/restApiService').then(module => {
               const { handleApiRequest } = module;

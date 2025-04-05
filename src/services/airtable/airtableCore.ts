@@ -7,13 +7,13 @@ export const AGENT_TABLE_NAME = 'Agents';
 
 // Get API token and base ID from localStorage or environment variables
 export const getApiKey = () => {
-  const key = localStorage.getItem('airtable_api_key') || import.meta.env.VITE_AIRTABLE_API_KEY || '';
+  const key = localStorage.getItem('airtable_api_key') || '';
   console.log('Retrieved API key:', key ? 'Key exists' : 'No key found');
   return key;
 };
 
 export const getBaseId = () => {
-  const baseId = localStorage.getItem('airtable_base_id') || import.meta.env.VITE_AIRTABLE_BASE_ID || '';
+  const baseId = localStorage.getItem('airtable_base_id') || '';
   console.log('Retrieved Base ID:', baseId || 'No base ID found');
   return baseId;
 };
@@ -69,8 +69,8 @@ export const saveAirtableConfig = async (apiKey: string, baseId: string): Promis
       
       // If reaching this point, we have a successful connection
       // Store the cleaned values and ensure they're saved properly
-      window.localStorage.setItem('airtable_api_key', apiKey);
-      window.localStorage.setItem('airtable_base_id', cleanBaseId);
+      localStorage.setItem('airtable_api_key', apiKey);
+      localStorage.setItem('airtable_base_id', cleanBaseId);
       
       // Log the storage action for debugging
       console.log('Configuration stored in localStorage:', {
@@ -90,8 +90,8 @@ export const saveAirtableConfig = async (apiKey: string, baseId: string): Promis
         
         // If reaching this point, we have a successful connection
         // Store the cleaned values
-        window.localStorage.setItem('airtable_api_key', apiKey);
-        window.localStorage.setItem('airtable_base_id', cleanBaseId);
+        localStorage.setItem('airtable_api_key', apiKey);
+        localStorage.setItem('airtable_base_id', cleanBaseId);
         
         console.log('Configuration stored in localStorage:', {
           api_key_saved: !!apiKey,
