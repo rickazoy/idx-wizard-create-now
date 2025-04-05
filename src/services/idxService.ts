@@ -69,14 +69,21 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
 
 export const fetchIDXProperties = async (): Promise<Property[]> => {
   try {
+    // Get all IDX settings from localStorage
     const idxApiKey = localStorage.getItem('idx_api_key');
     const idxApiOutputType = localStorage.getItem('idx_output_type') || 'json';
     const idxApiVersion = localStorage.getItem('idx_api_version') || '1.2.2';
     const idxAncillaryKey = localStorage.getItem('idx_ancillary_key');
     
     if (!idxApiKey) {
+      console.log('No IDX API key found in localStorage');
       throw new Error('IDX API key not found');
     }
+    
+    console.log('IDX API Key available:', !!idxApiKey);
+    console.log('IDX Output Type:', idxApiOutputType);
+    console.log('IDX API Version:', idxApiVersion);
+    console.log('IDX Ancillary Key available:', !!idxAncillaryKey);
     
     // Build headers according to IDX Broker documentation
     const headers: HeadersInit = {
@@ -97,6 +104,8 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
       headers['ancillarykey'] = idxAncillaryKey;
     }
     
+    console.log('Sending request to IDX API with headers:', headers);
+    
     // For development testing, we'll add a small delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -105,7 +114,7 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
     });
     
     if (!response.ok) {
-      console.log('Using mock IDX data');
+      console.log('Using mock IDX data due to error response:', response.status);
       
       const mockData: { [key: string]: IDXProperty } = {
         "a000!%5362657": {
@@ -178,6 +187,7 @@ export const fetchIDXProperties = async (): Promise<Property[]> => {
     }
     
     const data = await response.json();
+    console.log('Successfully retrieved IDX properties:', Object.keys(data).length);
     return Object.values(data).map(convertIDXToProperty);
   } catch (error) {
     console.error('Error fetching IDX properties:', error);

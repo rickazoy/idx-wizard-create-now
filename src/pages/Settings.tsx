@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchListingAgents, saveAirtableConfig, updateAgent } from '@/services/airtableService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Info, Upload, User, Key } from 'lucide-react';
+import { AlertCircle, Database, Globe, Info, Key, Upload, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 
@@ -43,19 +43,37 @@ const agentFormSchema = z.object({
   name: z.string().min(1, { message: 'Agent name is required' }),
   bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
   photoUrl: z.string().default(''),
-  idxApiKey: z.string().default(''),
+});
+
+const idxFormSchema = z.object({
+  apiKey: z.string().min(1, { message: 'IDX API Key is required' }),
+  outputType: z.string().default('json'),
+  apiVersion: z.string().default('1.2.2'),
+  ancillaryKey: z.string().optional(),
 });
 
 type AirtableFormValues = z.infer<typeof airtableFormSchema>;
 type AgentFormValues = z.infer<typeof agentFormSchema>;
+type IdxFormValues = z.infer<typeof idxFormSchema>;
 
-const Settings = () => {
+type SettingsProps = {
+  initialTab?: string;
+};
+
+const Settings = ({ initialTab }: SettingsProps = {}) => {
   const { toast } = useToast();
   const [listingAgents, setListingAgents] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("airtable");
+  const [activeTab, setActiveTab] = useState(initialTab || "airtable");
   const [photoPreview, setPhotoPreview] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Set the active tab when initialTab changes
+  useEffect(() => {
+    if (initialTab && ["airtable", "idx", "agent"].includes(initialTab)) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   const airtableForm = useForm<AirtableFormValues>({
     resolver: zodResolver(airtableFormSchema),
@@ -73,7 +91,16 @@ const Settings = () => {
       name: localStorage.getItem('agent_name') || 'Adam Johnson',
       bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida.',
       photoUrl: localStorage.getItem('agent_photo') || '/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png',
-      idxApiKey: localStorage.getItem('idx_api_key') || '',
+    },
+  });
+
+  const idxForm = useForm<IdxFormValues>({
+    resolver: zodResolver(idxFormSchema),
+    defaultValues: {
+      apiKey: localStorage.getItem('idx_api_key') || '',
+      outputType: localStorage.getItem('idx_output_type') || 'json',
+      apiVersion: localStorage.getItem('idx_api_version') || '1.2.2',
+      ancillaryKey: localStorage.getItem('idx_ancillary_key') || '',
     },
   });
 
@@ -146,14 +173,13 @@ const Settings = () => {
       localStorage.setItem('agent_name', values.name);
       localStorage.setItem('agent_bio', values.bio);
       localStorage.setItem('agent_photo', values.photoUrl);
-      localStorage.setItem('idx_api_key', values.idxApiKey);
       
       if (airtableForm.getValues('apiKey') && airtableForm.getValues('baseId')) {
         const success = await updateAgent({
           name: values.name,
           bio: values.bio,
           photo: values.photoUrl,
-          idx: values.idxApiKey
+          idx: idxForm.getValues('apiKey')
         });
         
         if (success) {
@@ -186,6 +212,49 @@ const Settings = () => {
     }
   };
 
+  const onSubmitIdx = async (values: IdxFormValues) => {
+    setIsLoading(true);
+    try {
+      localStorage.setItem('idx_api_key', values.apiKey);
+      localStorage.setItem('idx_output_type', values.outputType);
+      localStorage.setItem('idx_api_version', values.apiVersion);
+      
+      if (values.ancillaryKey) {
+        localStorage.setItem('idx_ancillary_key', values.ancillaryKey);
+      } else {
+        localStorage.removeItem('idx_ancillary_key');
+      }
+      
+      toast({
+        title: 'IDX Settings Saved',
+        description: 'Your IDX Broker API settings have been updated successfully.',
+      });
+      
+      // If agent form is filled out, update the agent with IDX key too
+      if (agentForm.getValues('name')) {
+        try {
+          await updateAgent({
+            name: agentForm.getValues('name'),
+            bio: agentForm.getValues('bio'),
+            photo: agentForm.getValues('photoUrl'),
+            idx: values.apiKey
+          });
+        } catch (error) {
+          console.error('Failed to update agent with IDX key:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving IDX settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save IDX settings.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -207,8 +276,18 @@ const Settings = () => {
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="w-full justify-start mb-6">
-            <TabsTrigger value="airtable">Airtable Connection</TabsTrigger>
-            <TabsTrigger value="agent">Agent Profile</TabsTrigger>
+            <TabsTrigger value="airtable">
+              <Database className="w-4 h-4 mr-2" />
+              Airtable
+            </TabsTrigger>
+            <TabsTrigger value="idx">
+              <Globe className="w-4 h-4 mr-2" />
+              IDX Broker
+            </TabsTrigger>
+            <TabsTrigger value="agent">
+              <User className="w-4 h-4 mr-2" />
+              Agent Profile
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="airtable">
@@ -355,6 +434,140 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
+          <TabsContent value="idx">
+            <Card>
+              <CardHeader>
+                <CardTitle>IDX Broker API</CardTitle>
+                <CardDescription>
+                  Configure your IDX Broker API connection for MLS property listings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert className="mb-6 bg-blue-50">
+                  <Info className="h-5 w-5 text-blue-500" />
+                  <AlertTitle>About IDX Integration</AlertTitle>
+                  <AlertDescription className="text-blue-700">
+                    <p className="text-sm mb-2">
+                      IDX integration allows you to display MLS listings directly on your website. Enter your API credentials below.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+                
+                <Form {...idxForm}>
+                  <form onSubmit={idxForm.handleSubmit(onSubmitIdx)} className="space-y-6">
+                    <FormField
+                      control={idxForm.control}
+                      name="apiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>IDX API Key</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your IDX Broker API Key" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            The 22-character API access key from your IDX Broker dashboard
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={idxForm.control}
+                        name="outputType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Output Type</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select output format" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="json">JSON</SelectItem>
+                                <SelectItem value="xml">XML</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              The format for API responses
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={idxForm.control}
+                        name="apiVersion"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API Version</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select API version" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="1.2.2">v1.2.2 (Latest Stable)</SelectItem>
+                                <SelectItem value="1.2.1">v1.2.1</SelectItem>
+                                <SelectItem value="1.2.0">v1.2.0</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              The IDX API version to use
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={idxForm.control}
+                      name="ancillaryKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ancillary Key (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your IDX Broker Ancillary Key (if applicable)" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            For Developer Partners accessing the API on behalf of clients
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="p-4 bg-gray-50 rounded-md border border-gray-200 mb-4">
+                      <h3 className="font-medium mb-2">Required Headers</h3>
+                      <ul className="text-sm space-y-1 text-gray-600">
+                        <li><strong>Content-Type:</strong> application/x-www-form-urlencoded (included automatically)</li>
+                        <li><strong>accesskey:</strong> Your API key (required)</li>
+                        <li><strong>outputtype:</strong> json/xml (optional)</li>
+                        <li><strong>apiversion:</strong> Version number (optional)</li>
+                        <li><strong>ancillarykey:</strong> Partner key for client access (optional)</li>
+                      </ul>
+                    </div>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Saving...' : 'Save IDX Settings'}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
           <TabsContent value="agent">
             <Card>
               <CardHeader>
@@ -447,40 +660,6 @@ const Settings = () => {
                                 </FormDescription>
                                 <FormMessage />
                               </div>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={agentForm.control}
-                          name="idxApiKey"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>IDX API Key</FormLabel>
-                              <div className="flex flex-col gap-2">
-                                <div className="flex gap-2 items-center">
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="Enter your IDX API key"
-                                      {...field}
-                                      type="text"
-                                      className="flex-grow"
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormDescription>
-                                  Enter your IDX API key for property data integration
-                                </FormDescription>
-                                <FormMessage />
-                              </div>
-                              <Alert className="mt-2 bg-blue-50">
-                                <Key className="h-4 w-4 text-blue-500" />
-                                <AlertTitle className="text-blue-700">IDX Integration</AlertTitle>
-                                <AlertDescription className="text-blue-600">
-                                  IDX integration allows you to display MLS listings directly on your website. 
-                                  You'll need to obtain an API key from your IDX provider.
-                                </AlertDescription>
-                              </Alert>
                             </FormItem>
                           )}
                         />
