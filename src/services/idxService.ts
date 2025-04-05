@@ -1,5 +1,5 @@
-
 import { Property } from '@/components/PropertyCard';
+import { getConfigValue } from './configService';
 
 export interface IDXProperty {
   address: string;
@@ -69,14 +69,17 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
 
 export const fetchIDXProperties = async (): Promise<Property[]> => {
   try {
-    // Get all IDX settings from localStorage
-    const idxApiKey = localStorage.getItem('idx_api_key');
-    const idxApiOutputType = localStorage.getItem('idx_output_type') || 'json';
-    const idxApiVersion = localStorage.getItem('idx_api_version') || '1.2.2';
-    const idxAncillaryKey = localStorage.getItem('idx_ancillary_key');
+    // Get tenant ID for Airtable-based configuration
+    const tenantId = localStorage.getItem('tenantId');
+    
+    // Get all IDX settings using our configService
+    const idxApiKey = await getConfigValue('idx_api_key', tenantId);
+    const idxApiOutputType = await getConfigValue('idx_output_type', tenantId) || 'json';
+    const idxApiVersion = await getConfigValue('idx_api_version', tenantId) || '1.2.2';
+    const idxAncillaryKey = await getConfigValue('idx_ancillary_key', tenantId);
     
     if (!idxApiKey) {
-      console.log('No IDX API key found in localStorage');
+      console.log('No IDX API key found in configuration');
       throw new Error('IDX API key not found');
     }
     

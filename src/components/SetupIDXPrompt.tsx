@@ -1,19 +1,43 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
+import { getConfigValue } from '@/services/configService';
 
 interface SetupIDXPromptProps {
   className?: string;
 }
 
 const SetupIDXPrompt: React.FC<SetupIDXPromptProps> = ({ className }) => {
-  // Check if IDX API key exists
-  const idxApiKey = localStorage.getItem('idx_api_key') || '';
-  const isConfigured = idxApiKey.length > 0;
+  const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    const checkConfiguration = async () => {
+      try {
+        // Get tenant ID for Airtable config
+        const tenantId = localStorage.getItem('tenantId');
+        
+        // Check if IDX API key exists in our config
+        const idxApiKey = await getConfigValue('idx_api_key', tenantId);
+        setIsConfigured(idxApiKey.length > 0);
+      } catch (error) {
+        console.error('Error checking IDX configuration:', error);
+        setIsConfigured(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkConfiguration();
+  }, []);
+  
+  // Don't render while checking configuration
+  if (loading) return null;
+  
+  // Don't render if IDX is configured
   if (isConfigured) return null;
   
   return (

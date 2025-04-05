@@ -28,9 +28,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchListingAgents, saveAirtableConfig, updateAgent } from '@/services/airtableService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Database, Globe, Info, Key, Upload, User } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
+import { AlertCircle, Database, Globe, Info, Key, Upload, User, Settings as SettingsIcon } from 'lucide-react';
+import ApiEndpoint from '@/components/ApiEndpoint';
+import { useConfig } from '@/hooks/useConfigSettings';
 
 const airtableFormSchema = z.object({
   apiKey: z.string().min(1, { message: 'API Token is required' }),
@@ -67,10 +67,11 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
   const [activeTab, setActiveTab] = useState(initialTab || "airtable");
   const [photoPreview, setPhotoPreview] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const tenantId = localStorage.getItem('tenantId');
 
-  // Set the active tab when initialTab changes
   useEffect(() => {
-    if (initialTab && ["airtable", "idx", "agent"].includes(initialTab)) {
+    if (initialTab && ["airtable", "idx", "agent", "api"].includes(initialTab)) {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
@@ -78,31 +79,94 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
   const airtableForm = useForm<AirtableFormValues>({
     resolver: zodResolver(airtableFormSchema),
     defaultValues: {
-      apiKey: localStorage.getItem('airtable_api_key') || '',
-      baseId: localStorage.getItem('airtable_base_id') || '',
-      listingAgentFilter: localStorage.getItem('airtable_agent_filter') || 'all',
-      isAdmin: localStorage.getItem('is_admin') === 'true',
+      apiKey: '',
+      baseId: '',
+      listingAgentFilter: 'all',
+      isAdmin: false,
     },
   });
 
   const agentForm = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
-      name: localStorage.getItem('agent_name') || 'Adam Johnson',
-      bio: localStorage.getItem('agent_bio') || 'A seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida.',
-      photoUrl: localStorage.getItem('agent_photo') || '/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png',
+      name: '',
+      bio: '',
+      photoUrl: '',
     },
   });
 
   const idxForm = useForm<IdxFormValues>({
     resolver: zodResolver(idxFormSchema),
     defaultValues: {
-      apiKey: localStorage.getItem('idx_api_key') || '',
-      outputType: localStorage.getItem('idx_output_type') || 'json',
-      apiVersion: localStorage.getItem('idx_api_version') || '1.2.2',
-      ancillaryKey: localStorage.getItem('idx_ancillary_key') || '',
+      apiKey: '',
+      outputType: 'json',
+      apiVersion: '1.2.2',
+      ancillaryKey: '',
     },
   });
+
+  const { value: airtableApiKey, updateValue: updateAirtableApiKey } = useConfig({ 
+    key: 'airtable_api_key', defaultValue: '' 
+  });
+  const { value: airtableBaseId, updateValue: updateAirtableBaseId } = useConfig({ 
+    key: 'airtable_base_id', defaultValue: '' 
+  });
+  const { value: airtableAgentFilter, updateValue: updateAirtableAgentFilter } = useConfig({ 
+    key: 'airtable_agent_filter', defaultValue: 'all' 
+  });
+  const { value: isAdmin, updateValue: updateIsAdmin } = useConfig({ 
+    key: 'is_admin', defaultValue: 'false' 
+  });
+  
+  const { value: idxApiKey, updateValue: updateIdxApiKey } = useConfig({ 
+    key: 'idx_api_key', defaultValue: '' 
+  });
+  const { value: idxOutputType, updateValue: updateIdxOutputType } = useConfig({ 
+    key: 'idx_output_type', defaultValue: 'json' 
+  });
+  const { value: idxApiVersion, updateValue: updateIdxApiVersion } = useConfig({ 
+    key: 'idx_api_version', defaultValue: '1.2.2' 
+  });
+  const { value: idxAncillaryKey, updateValue: updateIdxAncillaryKey } = useConfig({ 
+    key: 'idx_ancillary_key', defaultValue: '' 
+  });
+  
+  const { value: agentName, updateValue: updateAgentName } = useConfig({ 
+    key: 'agent_name', defaultValue: 'Adam Johnson' 
+  });
+  const { value: agentBio, updateValue: updateAgentBio } = useConfig({ 
+    key: 'agent_bio', defaultValue: 'A seasoned real estate agent specializing in luxury waterfront condos in Southeast Florida.' 
+  });
+  const { value: agentPhoto, updateValue: updateAgentPhoto } = useConfig({ 
+    key: 'agent_photo', defaultValue: '/lovable-uploads/176200ee-5ba2-4fb0-af34-13fc98eb8fa5.png' 
+  });
+  
+  useEffect(() => {
+    airtableForm.reset({
+      apiKey: airtableApiKey,
+      baseId: airtableBaseId,
+      listingAgentFilter: airtableAgentFilter,
+      isAdmin: isAdmin === 'true',
+    });
+  }, [airtableApiKey, airtableBaseId, airtableAgentFilter, isAdmin, airtableForm]);
+  
+  useEffect(() => {
+    idxForm.reset({
+      apiKey: idxApiKey,
+      outputType: idxOutputType,
+      apiVersion: idxApiVersion,
+      ancillaryKey: idxAncillaryKey,
+    });
+  }, [idxApiKey, idxOutputType, idxApiVersion, idxAncillaryKey, idxForm]);
+  
+  useEffect(() => {
+    agentForm.reset({
+      name: agentName,
+      bio: agentBio,
+      photoUrl: agentPhoto,
+    });
+    setPhotoPreview(agentPhoto);
+  }, [agentName, agentBio, agentPhoto, agentForm]);
 
   useEffect(() => {
     setPhotoPreview(agentForm.watch('photoUrl'));
@@ -139,27 +203,34 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
   const onSubmitAirtable = async (values: AirtableFormValues) => {
     setIsLoading(true);
     try {
-      localStorage.setItem('airtable_api_key', values.apiKey);
-      localStorage.setItem('airtable_base_id', values.baseId);
-      localStorage.setItem('is_admin', values.isAdmin.toString());
+      await updateAirtableApiKey(values.apiKey);
+      await updateAirtableBaseId(values.baseId);
+      await updateIsAdmin(values.isAdmin.toString());
       
       if (values.listingAgentFilter) {
-        localStorage.setItem('airtable_agent_filter', values.listingAgentFilter);
-      } else {
-        localStorage.removeItem('airtable_agent_filter');
+        await updateAirtableAgentFilter(values.listingAgentFilter);
       }
       
-      await saveAirtableConfig(values.apiKey, values.baseId);
-      
-      toast({
-        title: 'Settings Saved',
-        description: 'Your Airtable connection settings have been updated successfully.',
-      });
+      try {
+        await saveAirtableConfig(values.apiKey, values.baseId);
+        
+        toast({
+          title: 'Settings Saved',
+          description: 'Your Airtable connection settings have been updated successfully.',
+        });
+      } catch (error) {
+        console.error('Error saving Airtable config:', error);
+        toast({
+          title: 'Airtable Connection Error',
+          description: 'Failed to verify connection to Airtable. Settings are saved locally but connection could not be established.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
         title: 'Error',
-        description: 'Failed to connect to Airtable. Please check your credentials and ensure your table is named "Property Management System Listings".',
+        description: 'Failed to save settings. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -170,9 +241,9 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
   const onSubmitAgent = async (values: AgentFormValues) => {
     setIsLoading(true);
     try {
-      localStorage.setItem('agent_name', values.name);
-      localStorage.setItem('agent_bio', values.bio);
-      localStorage.setItem('agent_photo', values.photoUrl);
+      await updateAgentName(values.name);
+      await updateAgentBio(values.bio);
+      await updateAgentPhoto(values.photoUrl);
       
       if (airtableForm.getValues('apiKey') && airtableForm.getValues('baseId')) {
         const success = await updateAgent({
@@ -215,14 +286,12 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
   const onSubmitIdx = async (values: IdxFormValues) => {
     setIsLoading(true);
     try {
-      localStorage.setItem('idx_api_key', values.apiKey);
-      localStorage.setItem('idx_output_type', values.outputType);
-      localStorage.setItem('idx_api_version', values.apiVersion);
+      await updateIdxApiKey(values.apiKey);
+      await updateIdxOutputType(values.outputType);
+      await updateIdxApiVersion(values.apiVersion);
       
       if (values.ancillaryKey) {
-        localStorage.setItem('idx_ancillary_key', values.ancillaryKey);
-      } else {
-        localStorage.removeItem('idx_ancillary_key');
+        await updateIdxAncillaryKey(values.ancillaryKey);
       }
       
       toast({
@@ -230,7 +299,6 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
         description: 'Your IDX Broker API settings have been updated successfully.',
       });
       
-      // If agent form is filled out, update the agent with IDX key too
       if (agentForm.getValues('name')) {
         try {
           await updateAgent({
@@ -287,6 +355,10 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
             <TabsTrigger value="agent">
               <User className="w-4 h-4 mr-2" />
               Agent Profile
+            </TabsTrigger>
+            <TabsTrigger value="api">
+              <SettingsIcon className="w-4 h-4 mr-2" />
+              API Integration
             </TabsTrigger>
           </TabsList>
           
@@ -691,6 +763,10 @@ const Settings = ({ initialTab }: SettingsProps = {}) => {
                 </Form>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="api">
+            <ApiEndpoint />
           </TabsContent>
         </Tabs>
       </div>
