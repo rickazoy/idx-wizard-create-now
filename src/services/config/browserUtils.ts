@@ -3,7 +3,7 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Safe browser environment detection
+// Safe browser environment detection with proper TypeScript handling
 const isBrowserEnv = (): boolean => {
   return typeof window !== 'undefined' && 
     typeof document !== 'undefined' && 
