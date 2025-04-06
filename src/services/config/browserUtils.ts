@@ -27,8 +27,8 @@ export const getCurrentUrl = (): URL | null => {
   }
   
   try {
-    // Safe access to window.location
-    return new URL(globalThis.window.location.href);
+    // Safe access to window.location with type casting
+    return new URL((globalThis as any).window.location.href);
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -43,8 +43,8 @@ export const isSecureContext = (): boolean => {
     return false;
   }
   
-  // Safe access to window.location
-  return globalThis.window.location.protocol === 'https:';
+  // Safe access to window.location with type casting
+  return (globalThis as any).window.location.protocol === 'https:';
 };
 
 /**
@@ -56,7 +56,7 @@ export const safeLocalStorage = {
       return null;
     }
     try {
-      return globalThis.localStorage.getItem(key);
+      return (globalThis as any).localStorage.getItem(key);
     } catch (error) {
       console.error(`Error accessing localStorage for key ${key}:`, error);
       return null;
@@ -68,7 +68,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      globalThis.localStorage.setItem(key, value);
+      (globalThis as any).localStorage.setItem(key, value);
     } catch (error) {
       console.error(`Error setting localStorage for key ${key}:`, error);
     }
@@ -79,7 +79,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      globalThis.localStorage.removeItem(key);
+      (globalThis as any).localStorage.removeItem(key);
     } catch (error) {
       console.error(`Error removing localStorage for key ${key}:`, error);
     }

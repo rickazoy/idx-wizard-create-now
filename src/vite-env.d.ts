@@ -4,8 +4,12 @@
 /// <reference lib="dom.iterable" />
 /// <reference lib="es2020" />
 
-// No need to redeclare these interfaces as they should be provided by DOM lib references
-// However, we can add any custom properties we need to existing interfaces
+// Add type declarations to make TypeScript happy when using globalThis
+interface GlobalThis {
+  window: Window & typeof globalThis;
+  document: Document;
+  localStorage: Storage;
+}
 
 // Ensure the file is treated as a module
 export {};
