@@ -88,11 +88,9 @@ export const initConfigFromUrl = () => {
       toast.success('Configuration updated from URL parameters');
       
       // Force reload to apply new settings
-      if (!params.has('no_reload')) {
+      if (!params.has('no_reload') && isBrowser()) {
         // Safely use location when we know we're in a browser
-        if (isBrowser()) {
-          window.location.href = window.location.origin + window.location.pathname;
-        }
+        window.location.href = window.location.origin + window.location.pathname;
       }
     }
   } catch (error) {

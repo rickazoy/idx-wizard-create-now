@@ -3,23 +3,25 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Explicitly check for browser environment once
-const isBrowserEnv = typeof window !== 'undefined' && 
-  typeof document !== 'undefined' && 
-  typeof localStorage !== 'undefined';
+// Safe browser environment detection
+const isBrowserEnv = (): boolean => {
+  return typeof window !== 'undefined' && 
+    typeof document !== 'undefined' && 
+    typeof localStorage !== 'undefined';
+};
 
 /**
  * Check if the code is running in a browser environment
  */
 export const isBrowser = (): boolean => {
-  return isBrowserEnv;
+  return isBrowserEnv();
 };
 
 /**
  * Get the current URL in a browser-safe way
  */
 export const getCurrentUrl = (): URL | null => {
-  if (!isBrowserEnv) {
+  if (!isBrowserEnv()) {
     return null;
   }
   
@@ -35,7 +37,7 @@ export const getCurrentUrl = (): URL | null => {
  * Check if we're running in a secure context (HTTPS)
  */
 export const isSecureContext = (): boolean => {
-  if (!isBrowserEnv) {
+  if (!isBrowserEnv()) {
     return false;
   }
   
@@ -47,7 +49,7 @@ export const isSecureContext = (): boolean => {
  */
 export const safeLocalStorage = {
   getItem: (key: string): string | null => {
-    if (!isBrowserEnv) {
+    if (!isBrowserEnv()) {
       return null;
     }
     try {
@@ -59,7 +61,7 @@ export const safeLocalStorage = {
   },
   
   setItem: (key: string, value: string): void => {
-    if (!isBrowserEnv) {
+    if (!isBrowserEnv()) {
       return;
     }
     try {
@@ -70,7 +72,7 @@ export const safeLocalStorage = {
   },
   
   removeItem: (key: string): void => {
-    if (!isBrowserEnv) {
+    if (!isBrowserEnv()) {
       return;
     }
     try {
