@@ -26,6 +26,7 @@ export const getCurrentUrl = (): URL | null => {
   }
   
   try {
+    // Safe access to window.location
     return new URL(window.location.href);
   } catch (error) {
     console.error('Error parsing current URL:', error);
@@ -41,6 +42,7 @@ export const isSecureContext = (): boolean => {
     return false;
   }
   
+  // Safe access to window.location
   return window.location.protocol === 'https:';
 };
 

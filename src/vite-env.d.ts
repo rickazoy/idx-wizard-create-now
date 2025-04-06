@@ -9,6 +9,7 @@ interface Window {
   location: Location;
 }
 
+// Explicitly declare these globals to avoid TypeScript errors
 declare var window: Window & typeof globalThis;
 declare var document: Document;
 declare var localStorage: Storage;
