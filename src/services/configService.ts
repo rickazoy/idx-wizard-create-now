@@ -23,7 +23,7 @@ export interface ConfigSettings {
 }
 
 // Check if we're in a browser environment - defined safely for SSR
-const isBrowser = typeof globalThis !== 'undefined' && !!globalThis.document;
+const isBrowser = typeof globalThis !== 'undefined' && typeof globalThis.document === 'object';
 
 /**
  * Initialize configuration from URL parameters
@@ -35,7 +35,7 @@ export const initConfigFromUrl = () => {
     if (!isBrowser) return;
     
     // Now we can safely use the window object
-    const url = new URL(location.href);
+    const url = new URL(globalThis.location?.href || '');
     const params = url.searchParams;
     
     // Check for API key parameter
@@ -105,8 +105,8 @@ export const initConfigFromUrl = () => {
       // Force reload to apply new settings
       if (!params.has('no_reload')) {
         // Safely use location when we know we're in a browser
-        if (isBrowser) {
-          location.href = location.origin + location.pathname;
+        if (isBrowser && globalThis.location) {
+          globalThis.location.href = globalThis.location.origin + globalThis.location.pathname;
         }
       }
     }
@@ -185,10 +185,10 @@ export const generateApiKey = (): string => {
   const length = 32;
   let result = '';
   
-  if (isBrowser) {
+  if (isBrowser && globalThis.crypto) {
     // Safely access the crypto object when we know we're in a browser
     const randomValues = new Uint8Array(length);
-    crypto.getRandomValues(randomValues);
+    globalThis.crypto.getRandomValues(randomValues);
     
     for (let i = 0; i < length; i++) {
       result += characters.charAt(randomValues[i] % characters.length);

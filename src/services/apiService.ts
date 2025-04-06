@@ -6,7 +6,7 @@ import { ConfigSettings, setConfigValue } from './configService';
 const API_KEY_STORAGE_KEY = 'lovable_api_key';
 
 // Check if we're in a browser environment - defined safely for SSR
-const isBrowser = typeof globalThis !== 'undefined' && !!globalThis.document;
+const isBrowser = typeof globalThis !== 'undefined' && typeof globalThis.document === 'object';
 
 /**
  * Check if the provided API key is valid
