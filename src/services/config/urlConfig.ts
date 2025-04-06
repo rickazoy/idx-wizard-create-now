@@ -1,6 +1,7 @@
 
 import { toast } from 'sonner';
 import { isBrowser } from './browserUtils';
+import { setConfigValue } from './configStorage';
 
 /**
  * Functions for initializing configuration from URL parameters
@@ -9,16 +10,23 @@ import { isBrowser } from './browserUtils';
 export const initConfigFromUrl = () => {
   try {
     // Check if we're in a browser environment
-    if (!isBrowser) return;
+    if (!isBrowser()) return;
     
     // Now we can safely use the window object
-    const url = new URL((globalThis as any).location?.href || '');
+    const url = new URL(window.location.href);
     const params = url.searchParams;
+    
+    // Store tenantId if provided
+    const tenantId = params.get('tenantId');
+    if (tenantId) {
+      setConfigValue('tenantId', tenantId);
+      console.log('TenantId set from URL parameter:', tenantId);
+    }
     
     // Check for API key parameter
     const apiKey = params.get('api_key');
     if (apiKey) {
-      localStorage.setItem('api_key', apiKey);
+      setConfigValue('api_key', apiKey);
       console.log('API key set from URL parameter');
     }
     
@@ -28,16 +36,16 @@ export const initConfigFromUrl = () => {
     const idxAncillaryKey = params.get('idx_ancillary_key');
     
     if (idxApiKey) {
-      localStorage.setItem('idx_api_key', idxApiKey);
+      setConfigValue('idx_api_key', idxApiKey);
       console.log('IDX API key set from URL parameter');
     }
     
     if (idxApiVersion) {
-      localStorage.setItem('idx_api_version', idxApiVersion);
+      setConfigValue('idx_api_version', idxApiVersion);
     }
     
     if (idxAncillaryKey) {
-      localStorage.setItem('idx_ancillary_key', idxAncillaryKey);
+      setConfigValue('idx_ancillary_key', idxAncillaryKey);
     }
     
     // Check for Airtable parameters
@@ -46,16 +54,16 @@ export const initConfigFromUrl = () => {
     const airtableAgentFilter = params.get('airtable_agent_filter');
     
     if (airtableApiKey) {
-      localStorage.setItem('airtable_api_key', airtableApiKey);
+      setConfigValue('airtable_api_key', airtableApiKey);
       console.log('Airtable API key set from URL parameter');
     }
     
     if (airtableBaseId) {
-      localStorage.setItem('airtable_base_id', airtableBaseId);
+      setConfigValue('airtable_base_id', airtableBaseId);
     }
     
     if (airtableAgentFilter) {
-      localStorage.setItem('airtable_agent_filter', airtableAgentFilter);
+      setConfigValue('airtable_agent_filter', airtableAgentFilter);
     }
     
     // Agent configuration from URL
@@ -64,26 +72,26 @@ export const initConfigFromUrl = () => {
     const agentPhoto = params.get('agent_photo');
     
     if (agentName) {
-      localStorage.setItem('agent_name', agentName);
+      setConfigValue('agent_name', agentName);
     }
     
     if (agentBio) {
-      localStorage.setItem('agent_bio', agentBio);
+      setConfigValue('agent_bio', agentBio);
     }
     
     if (agentPhoto) {
-      localStorage.setItem('agent_photo', agentPhoto);
+      setConfigValue('agent_photo', agentPhoto);
     }
 
     // If we have set any configuration parameters, show a toast notification
-    if (params.has('idx_api_key') || params.has('airtable_api_key') || params.has('api_key')) {
+    if (params.has('idx_api_key') || params.has('airtable_api_key') || params.has('api_key') || params.has('tenantId')) {
       toast.success('Configuration updated from URL parameters');
       
       // Force reload to apply new settings
       if (!params.has('no_reload')) {
         // Safely use location when we know we're in a browser
-        if (isBrowser && (globalThis as any).location) {
-          (globalThis as any).location.href = (globalThis as any).location.origin + (globalThis as any).location.pathname;
+        if (isBrowser()) {
+          window.location.href = window.location.origin + window.location.pathname;
         }
       }
     }

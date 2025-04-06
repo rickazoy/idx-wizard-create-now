@@ -8,8 +8,8 @@
  */
 export const isBrowser = (): boolean => {
   return typeof window !== 'undefined' && 
-    typeof globalThis?.document !== 'undefined' && 
-    typeof globalThis?.localStorage !== 'undefined';
+    typeof document !== 'undefined' && 
+    typeof localStorage !== 'undefined';
 };
 
 /**
@@ -21,7 +21,7 @@ export const getCurrentUrl = (): URL | null => {
   }
   
   try {
-    return new URL(globalThis.location?.href || '');
+    return new URL(window.location?.href || '');
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -36,7 +36,7 @@ export const isSecureContext = (): boolean => {
     return false;
   }
   
-  return globalThis.location?.protocol === 'https:';
+  return window.location?.protocol === 'https:';
 };
 
 /**

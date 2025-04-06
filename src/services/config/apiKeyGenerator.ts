@@ -1,30 +1,41 @@
 
-import { isBrowser } from './browserUtils';
+import { safeLocalStorage } from './browserUtils';
+import { getConfigValue, setConfigValue } from './configStorage';
 
 /**
- * Functions for API key generation and management
+ * Functions for API key management
  */
 
-// Generate a new API key
+// Generate a random API key
 export const generateApiKey = (): string => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const length = 32;
   let result = '';
   
-  if (isBrowser && (globalThis as any).crypto) {
-    // Safely access the crypto object when we know we're in a browser
-    const randomValues = new Uint8Array(length);
-    (globalThis as any).crypto.getRandomValues(randomValues);
-    
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(randomValues[i] % characters.length);
-    }
-  } else {
-    // Fallback for non-browser environments
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   
   return result;
+};
+
+// Check if an API key exists
+export const hasApiKey = (): boolean => {
+  const key = getConfigValue('api_key');
+  return key !== null && key.length > 0;
+};
+
+// Save API key
+export const saveApiKey = (key: string): void => {
+  setConfigValue('api_key', key);
+};
+
+// Validate API key format (simple check)
+export const isValidApiKey = (key: string): boolean => {
+  return key.length >= 24;
+};
+
+// Get API key
+export const getApiKey = (): string | null => {
+  return getConfigValue('api_key');
 };
