@@ -4,12 +4,19 @@
 /// <reference lib="dom.iterable" />
 /// <reference lib="es2020" />
 
-// Declare global variables for TypeScript
 interface Window {
   location: Location;
 }
 
-// Explicitly declare these globals to avoid TypeScript errors
-declare var window: Window & typeof globalThis;
-declare var document: Document;
-declare var localStorage: Storage;
+// Declare global variables that should be available in browser contexts
+declare global {
+  interface Window {
+    location: Location;
+  }
+  var window: Window & typeof globalThis;
+  var document: Document;
+  var localStorage: Storage;
+}
+
+// These exports ensure the definitions are treated as a module
+export {};

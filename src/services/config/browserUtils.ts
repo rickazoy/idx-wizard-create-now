@@ -5,7 +5,8 @@
 
 // TypeScript-safe browser environment detection
 const isBrowserEnv = (): boolean => {
-  return typeof window !== 'undefined' && 
+  return typeof globalThis !== 'undefined' && 
+    typeof window !== 'undefined' && 
     typeof document !== 'undefined' && 
     typeof localStorage !== 'undefined';
 };
@@ -27,10 +28,7 @@ export const getCurrentUrl = (): URL | null => {
   
   try {
     // Safe access to window.location
-    if (typeof window !== 'undefined' && window.location) {
-      return new URL(window.location.href);
-    }
-    return null;
+    return new URL(window.location.href);
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -46,10 +44,7 @@ export const isSecureContext = (): boolean => {
   }
   
   // Safe access to window.location
-  if (typeof window !== 'undefined' && window.location) {
-    return window.location.protocol === 'https:';
-  }
-  return false;
+  return window.location.protocol === 'https:';
 };
 
 /**
