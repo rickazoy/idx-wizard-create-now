@@ -9,6 +9,6 @@ interface Window {
   location: Location;
 }
 
-declare var window: Window;
+declare var window: Window & typeof globalThis;
 declare var document: Document;
 declare var localStorage: Storage;
