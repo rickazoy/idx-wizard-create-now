@@ -66,8 +66,8 @@ export const handleApiRequest = async (request: Request): Promise<Response> => {
       });
     }
     
-    // Process the configuration update
-    const result = await processConfigUpdate(data.configData, apiKey, data.tenantId);
+    // Process the configuration update - remove the tenantId parameter as it's not expected by the function
+    const result = await processConfigUpdate(data.configData, apiKey);
     
     return new Response(JSON.stringify(result), {
       status: result.success ? 200 : 400,

@@ -28,6 +28,7 @@ export interface ConfigSettings {
  */
 export const initConfigFromUrl = () => {
   try {
+    // Check if we're in a browser environment
     if (typeof window === 'undefined') return;
     
     const url = new URL(window.location.href);
@@ -99,7 +100,10 @@ export const initConfigFromUrl = () => {
       
       // Force reload to apply new settings
       if (!params.has('no_reload')) {
-        window.location.href = window.location.origin + window.location.pathname;
+        // Check if we're in a browser environment
+        if (typeof window !== 'undefined') {
+          window.location.href = window.location.origin + window.location.pathname;
+        }
       }
     }
   } catch (error) {
@@ -177,8 +181,8 @@ export const generateApiKey = (): string => {
   const length = 32;
   let result = '';
   
-  const randomValues = new Uint8Array(length);
   if (typeof window !== 'undefined') {
+    const randomValues = new Uint8Array(length);
     window.crypto.getRandomValues(randomValues);
     
     for (let i = 0; i < length; i++) {
