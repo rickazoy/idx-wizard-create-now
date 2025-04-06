@@ -1,6 +1,6 @@
 
 import { ConfigSettings } from './types';
-import { isBrowser } from './browserUtils';
+import { isBrowser, safeLocalStorage } from './browserUtils';
 
 /**
  * Core configuration storage and retrieval functions
@@ -8,20 +8,20 @@ import { isBrowser } from './browserUtils';
 
 // Get a configuration value
 export const getConfigValue = (key: keyof ConfigSettings): string | null => {
-  if (!isBrowser) return null;
-  return localStorage.getItem(key) || null;
+  if (!isBrowser()) return null;
+  return safeLocalStorage.getItem(key) || null;
 };
 
 // Set a configuration value
 export const setConfigValue = (key: keyof ConfigSettings, value: string): void => {
-  if (!isBrowser) return;
-  localStorage.setItem(key, value);
+  if (!isBrowser()) return;
+  safeLocalStorage.setItem(key, value);
 };
 
 // Clear a configuration value
 export const clearConfigValue = (key: keyof ConfigSettings): void => {
-  if (!isBrowser) return;
-  localStorage.removeItem(key);
+  if (!isBrowser()) return;
+  safeLocalStorage.removeItem(key);
 };
 
 // Export configuration as JSON
