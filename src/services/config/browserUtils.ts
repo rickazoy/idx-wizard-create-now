@@ -6,9 +6,9 @@
 // TypeScript-safe browser environment detection
 const isBrowserEnv = (): boolean => {
   return typeof globalThis !== 'undefined' && 
-    typeof globalThis.window !== 'undefined' && 
-    typeof globalThis.document !== 'undefined' && 
-    typeof globalThis.localStorage !== 'undefined';
+    typeof (globalThis as any).window !== 'undefined' && 
+    typeof (globalThis as any).document !== 'undefined' && 
+    typeof (globalThis as any).localStorage !== 'undefined';
 };
 
 /**
