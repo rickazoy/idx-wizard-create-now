@@ -26,7 +26,7 @@ export const getCurrentUrl = (): URL | null => {
   }
   
   try {
-    return new URL((window as Window).location.href);
+    return new URL(window.location.href);
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -41,7 +41,7 @@ export const isSecureContext = (): boolean => {
     return false;
   }
   
-  return (window as Window).location.protocol === 'https:';
+  return window.location.protocol === 'https:';
 };
 
 /**
@@ -53,7 +53,7 @@ export const safeLocalStorage = {
       return null;
     }
     try {
-      return (localStorage as Storage).getItem(key);
+      return localStorage.getItem(key);
     } catch (error) {
       console.error(`Error accessing localStorage for key ${key}:`, error);
       return null;
@@ -65,7 +65,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      (localStorage as Storage).setItem(key, value);
+      localStorage.setItem(key, value);
     } catch (error) {
       console.error(`Error setting localStorage for key ${key}:`, error);
     }
@@ -76,7 +76,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      (localStorage as Storage).removeItem(key);
+      localStorage.removeItem(key);
     } catch (error) {
       console.error(`Error removing localStorage for key ${key}:`, error);
     }

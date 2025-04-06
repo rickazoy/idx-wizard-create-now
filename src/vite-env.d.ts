@@ -11,10 +11,6 @@ interface Window {
 
 // Ensure these DOM APIs are recognized globally
 declare global {
-  var window: Window & typeof globalThis;
-  var document: Document;
-  var localStorage: Storage;
-  
   interface Window extends globalThis {}
 }
 
