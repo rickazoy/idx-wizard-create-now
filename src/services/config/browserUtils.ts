@@ -9,36 +9,41 @@ declare global {
     location: Location;
   }
 
-  interface Location {
-    href: string;
-    protocol: string;
-    origin: string;
-    pathname: string;
-  }
+  // Use DOM lib types instead of redefining Location
+  // interface Location {
+  //   href: string;
+  //   protocol: string;
+  //   origin: string;
+  //   pathname: string;
+  // }
 
-  interface Document {}
+  // No need to re-declare Document
+  // interface Document {}
 
-  interface Storage {
-    getItem(key: string): string | null;
-    setItem(key: string, value: string): void;
-    removeItem(key: string): void;
-  }
+  // No need to re-declare Storage
+  // interface Storage {
+  //   getItem(key: string): string | null;
+  //   setItem(key: string, value: string): void;
+  //   removeItem(key: string): void;
+  // }
 }
+
+const isBrowserEnv = typeof window !== 'undefined' && 
+  typeof document !== 'undefined' && 
+  typeof localStorage !== 'undefined';
 
 /**
  * Check if the code is running in a browser environment
  */
 export const isBrowser = (): boolean => {
-  return typeof window !== 'undefined' && 
-    typeof document !== 'undefined' && 
-    typeof localStorage !== 'undefined';
+  return isBrowserEnv;
 };
 
 /**
  * Get the current URL in a browser-safe way
  */
 export const getCurrentUrl = (): URL | null => {
-  if (!isBrowser()) {
+  if (!isBrowserEnv) {
     return null;
   }
   
@@ -54,7 +59,7 @@ export const getCurrentUrl = (): URL | null => {
  * Check if we're running in a secure context (HTTPS)
  */
 export const isSecureContext = (): boolean => {
-  if (!isBrowser()) {
+  if (!isBrowserEnv) {
     return false;
   }
   
@@ -66,7 +71,7 @@ export const isSecureContext = (): boolean => {
  */
 export const safeLocalStorage = {
   getItem: (key: string): string | null => {
-    if (!isBrowser()) {
+    if (!isBrowserEnv) {
       return null;
     }
     try {
@@ -78,7 +83,7 @@ export const safeLocalStorage = {
   },
   
   setItem: (key: string, value: string): void => {
-    if (!isBrowser()) {
+    if (!isBrowserEnv) {
       return;
     }
     try {
@@ -89,7 +94,7 @@ export const safeLocalStorage = {
   },
   
   removeItem: (key: string): void => {
-    if (!isBrowser()) {
+    if (!isBrowserEnv) {
       return;
     }
     try {
