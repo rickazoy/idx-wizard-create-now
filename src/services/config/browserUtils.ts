@@ -3,21 +3,21 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Proper type declarations for browser environment
+// Define global types for browser environment
 declare global {
   interface Window {
     location: Location;
   }
-  
+
   interface Location {
     href: string;
     protocol: string;
     origin: string;
     pathname: string;
   }
-  
+
   interface Document {}
-  
+
   interface Storage {
     getItem(key: string): string | null;
     setItem(key: string, value: string): void;
