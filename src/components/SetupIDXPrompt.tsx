@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
-import { getConfigValue } from '@/services/configService';
+import { getConfigValue } from '@/services/config';
 
 interface SetupIDXPromptProps {
   className?: string;

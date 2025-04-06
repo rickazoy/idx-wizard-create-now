@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getConfigValue, setConfigValue } from '@/services/configService';
+import { getConfigValue, setConfigValue } from '@/services/config';
 
 // Update the ConfigKey type to match exactly what's in configService.ts
 export type ConfigKey = 

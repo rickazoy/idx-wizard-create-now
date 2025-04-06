@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { getConfigValue, setConfigValue } from '@/services/configService';
+import { getConfigValue, setConfigValue } from '@/services/config';
 
 const AgentSettings = () => {
   const [agentName, setAgentName] = useState('');
@@ -19,7 +18,6 @@ const AgentSettings = () => {
     const loadSettings = async () => {
       setIsLoading(true);
       try {
-        // Load settings from config service
         const storedAgentName = getConfigValue('agent_name');
         const storedAgentBio = getConfigValue('agent_bio');
         const storedAgentPhoto = getConfigValue('agent_photo');
@@ -45,7 +43,6 @@ const AgentSettings = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save settings to config service
       setConfigValue('agent_name', agentName);
       setConfigValue('agent_bio', agentBio);
       setConfigValue('agent_photo', agentPhoto);

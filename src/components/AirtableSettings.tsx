@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import { getConfigValue, setConfigValue } from '@/services/configService';
+import { getConfigValue, setConfigValue } from '@/services/config';
 import { saveAirtableConfig } from '@/services/airtable/airtableCore';
 
 const AirtableSettings = () => {

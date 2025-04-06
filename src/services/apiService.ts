@@ -1,5 +1,5 @@
 
-import { ConfigSettings, setConfigValue } from './configService';
+import { ConfigSettings, setConfigValue } from './config';
 
 // API key stored in localStorage (for demo purposes)
 // In production, this should be stored securely
