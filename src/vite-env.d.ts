@@ -2,16 +2,17 @@
 /// <reference types="vite/client" />
 /// <reference types="@types/node" />
 
-// Explicitly declare DOM types to resolve TypeScript errors
+// Explicitly inform TypeScript about DOM globals
 interface Window {
   location: Location;
   localStorage: Storage;
   document: Document;
 }
 
-// Ensure these DOM APIs are recognized globally
 declare global {
-  interface Window extends globalThis {}
+  const window: Window;
+  const document: Document;
+  const localStorage: Storage;
 }
 
 // Ensure the file is treated as a module
