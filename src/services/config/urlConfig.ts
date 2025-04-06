@@ -12,7 +12,7 @@ export const initConfigFromUrl = () => {
     // Check if we're in a browser environment
     if (!isBrowser()) return;
     
-    // Now we can safely use the window object
+    // Now we can safely use the globalThis object
     const url = new URL(globalThis.location.href);
     const params = url.searchParams;
     

@@ -4,18 +4,12 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
 
-// Augment the globalThis interface with browser-specific properties
-interface Window {
+// Properly extend the globalThis type for browser environments
+interface GlobalThis {
   document: Document;
   localStorage: Storage;
   location: Location;
-}
-
-// Add Window properties to globalThis for TypeScript
-declare global {
-  var document: Document;
-  var localStorage: Storage;
-  var location: Location;
+  window: Window;
 }
 
 // Ensure the file is treated as a module
