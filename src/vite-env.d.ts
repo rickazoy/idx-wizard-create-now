@@ -4,15 +4,8 @@
 /// <reference lib="dom.iterable" />
 /// <reference lib="es2020" />
 
-// Declaration merging to augment existing Window interface
-interface Window {
-  location: Location;
-}
+// No need to redeclare these interfaces as they should be provided by DOM lib references
+// However, we can add any custom properties we need to existing interfaces
 
-// Make sure TypeScript knows about the global objects
-declare var window: Window & typeof globalThis;
-declare var document: Document;
-declare var localStorage: Storage;
-
-// These exports ensure the definitions are treated as a module
+// Ensure the file is treated as a module
 export {};
