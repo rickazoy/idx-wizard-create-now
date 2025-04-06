@@ -3,8 +3,8 @@ import { toast } from 'sonner';
 import { isBrowser } from './browserUtils';
 import { setConfigValue } from './configStorage';
 
-// Add type declarations for browser environment
-declare const window: Window & typeof globalThis;
+// We can rely on the global declarations from browserUtils.ts
+// No need to redeclare Window
 
 /**
  * Functions for initializing configuration from URL parameters

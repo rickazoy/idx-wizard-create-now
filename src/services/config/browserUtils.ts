@@ -3,10 +3,10 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Add type declarations for browser environment
-declare const window: Window & typeof globalThis;
-declare const document: Document;
-declare const localStorage: Storage;
+// Correct type declarations for browser environment
+declare global {
+  interface Window extends globalThis {}
+}
 
 /**
  * Check if the code is running in a browser environment
