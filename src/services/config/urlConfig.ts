@@ -12,8 +12,8 @@ export const initConfigFromUrl = () => {
     // Check if we're in a browser environment
     if (!isBrowser()) return;
     
-    // Now we can safely use the globalThis object
-    const url = new URL(globalThis.location.href);
+    // Now we can safely use the globalThis object with type assertion
+    const url = new URL((globalThis as any).location.href);
     const params = url.searchParams;
     
     // Store tenantId if provided
@@ -90,7 +90,7 @@ export const initConfigFromUrl = () => {
       // Force reload to apply new settings
       if (!params.has('no_reload') && isBrowser()) {
         // Only use location when we're sure we're in a browser
-        globalThis.location.href = globalThis.location.origin + globalThis.location.pathname;
+        (globalThis as any).location.href = (globalThis as any).location.origin + (globalThis as any).location.pathname;
       }
     }
   } catch (error) {

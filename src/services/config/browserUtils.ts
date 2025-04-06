@@ -6,8 +6,8 @@
 // TypeScript-safe browser environment detection
 const isBrowserEnv = (): boolean => {
   return typeof globalThis !== 'undefined' && 
-         typeof globalThis.document !== 'undefined' && 
-         typeof globalThis.localStorage !== 'undefined';
+         typeof (globalThis as any).document !== 'undefined' && 
+         typeof (globalThis as any).localStorage !== 'undefined';
 };
 
 /**
@@ -26,7 +26,7 @@ export const getCurrentUrl = (): URL | null => {
   }
   
   try {
-    return new URL(globalThis.location.href);
+    return new URL((globalThis as any).location.href);
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -41,7 +41,7 @@ export const isSecureContext = (): boolean => {
     return false;
   }
   
-  return globalThis.location.protocol === 'https:';
+  return (globalThis as any).location.protocol === 'https:';
 };
 
 /**
@@ -53,7 +53,7 @@ export const safeLocalStorage = {
       return null;
     }
     try {
-      return globalThis.localStorage.getItem(key);
+      return (globalThis as any).localStorage.getItem(key);
     } catch (error) {
       console.error(`Error accessing localStorage for key ${key}:`, error);
       return null;
@@ -65,7 +65,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      globalThis.localStorage.setItem(key, value);
+      (globalThis as any).localStorage.setItem(key, value);
     } catch (error) {
       console.error(`Error setting localStorage for key ${key}:`, error);
     }
@@ -76,7 +76,7 @@ export const safeLocalStorage = {
       return;
     }
     try {
-      globalThis.localStorage.removeItem(key);
+      (globalThis as any).localStorage.removeItem(key);
     } catch (error) {
       console.error(`Error removing localStorage for key ${key}:`, error);
     }
