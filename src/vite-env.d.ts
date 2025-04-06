@@ -1,10 +1,15 @@
 
 /// <reference types="vite/client" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="es2020" />
+/// <reference types="@types/node" />
 
-// Extend the GlobalThis interface to include browser globals
+// This ensures TypeScript recognizes DOM types
+interface Window {
+  location: Location;
+  localStorage: Storage;
+  document: Document;
+}
+
+// Ensure these DOM APIs are recognized globally
 declare global {
   interface Window extends globalThis {}
 }
