@@ -35,7 +35,7 @@ export const initConfigFromUrl = () => {
     if (!isBrowser) return;
     
     // Now we can safely use the window object
-    const url = new URL(globalThis.window.location.href);
+    const url = new URL(window.location.href);
     const params = url.searchParams;
     
     // Check for API key parameter
@@ -106,8 +106,7 @@ export const initConfigFromUrl = () => {
       if (!params.has('no_reload')) {
         // Safely use window when we know we're in a browser
         if (isBrowser) {
-          const win = globalThis.window;
-          win.location.href = win.location.origin + win.location.pathname;
+          window.location.href = window.location.origin + window.location.pathname;
         }
       }
     }
@@ -189,7 +188,7 @@ export const generateApiKey = (): string => {
   if (isBrowser) {
     // Safely access the crypto object when we know we're in a browser
     const randomValues = new Uint8Array(length);
-    globalThis.window.crypto.getRandomValues(randomValues);
+    window.crypto.getRandomValues(randomValues);
     
     for (let i = 0; i < length; i++) {
       result += characters.charAt(randomValues[i] % characters.length);
