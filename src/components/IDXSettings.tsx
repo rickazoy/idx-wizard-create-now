@@ -30,8 +30,8 @@ const IDXSettings = () => {
         // Load settings from config service
         const storedApiKey = getConfigValue('idx_api_key');
         const storedOutputType = getConfigValue('idx_output_type');
-        const storedApiVersion = getConfigValue('api_version');
-        const storedAncillaryKey = getConfigValue('ancillary_key');
+        const storedApiVersion = getConfigValue('idx_api_version') || getConfigValue('api_version');
+        const storedAncillaryKey = getConfigValue('idx_ancillary_key') || getConfigValue('ancillary_key');
         
         setApiKey(storedApiKey || '');
         setOutputType(storedOutputType || '');
@@ -63,6 +63,7 @@ const IDXSettings = () => {
         return;
       }
       
+      // Fetch records from the 'Agent Sites' table with the 'API Version' field
       const records = await base('Agent Sites').select({
         fields: ['API Version']
       }).all();
@@ -96,8 +97,8 @@ const IDXSettings = () => {
       // Save settings to config service
       setConfigValue('idx_api_key', apiKey);
       setConfigValue('idx_output_type', outputType);
-      setConfigValue('api_version', apiVersion);
-      setConfigValue('ancillary_key', ancillaryKey);
+      setConfigValue('idx_api_version', apiVersion);
+      setConfigValue('idx_ancillary_key', ancillaryKey);
       
       toast({
         title: 'Success',
