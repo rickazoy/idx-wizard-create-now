@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { getApiKey, setApiKey } from '@/services/apiService';
+import { getApiKey, setApiKey } from '@/services/api';
 import { toast } from '@/components/ui/use-toast';
 import { Copy, CheckCircle2 } from 'lucide-react';
 

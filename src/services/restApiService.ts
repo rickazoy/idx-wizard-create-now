@@ -1,6 +1,6 @@
 
-import { ConfigSettings } from './configService';
-import { processConfigUpdate, validateApiKey } from './apiService';
+import { ConfigSettings } from './config';
+import { processConfigUpdate, validateApiKey } from './api';
 
 /**
  * REST API endpoint handler for configuration updates

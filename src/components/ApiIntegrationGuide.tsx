@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code } from 'lucide-react';
 import ApiKeySettings from './ApiKeySettings';
-import { getApiKey } from '@/services/apiService';
+import { getApiKey } from '@/services/api';
 
 const ApiIntegrationGuide = () => {
   const [activeTab, setActiveTab] = useState('url-params');

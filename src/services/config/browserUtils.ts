@@ -1,22 +1,79 @@
 
 /**
- * Utility functions for browser environment detection
+ * Utility functions for browser environment detection and operations
  */
 
-// Check if we're in a browser environment - defined safely for SSR
-export const isBrowser = typeof globalThis !== 'undefined' && 
-  typeof globalThis.document === 'object';
+/**
+ * Check if the code is running in a browser environment
+ */
+export const isBrowser = (): boolean => {
+  return typeof window !== 'undefined' && 
+    typeof globalThis?.document !== 'undefined' && 
+    typeof globalThis?.localStorage !== 'undefined';
+};
 
-// Local storage access utilities
-export const saveToLocalStorage = (key: string, value: string): void => {
-  if (isBrowser) {
-    localStorage.setItem(key, value);
+/**
+ * Get the current URL in a browser-safe way
+ */
+export const getCurrentUrl = (): URL | null => {
+  if (!isBrowser()) {
+    return null;
+  }
+  
+  try {
+    return new URL(globalThis.location?.href || '');
+  } catch (error) {
+    console.error('Error parsing current URL:', error);
+    return null;
   }
 };
 
-export const getFromLocalStorage = (key: string): string | null => {
-  if (isBrowser) {
-    return localStorage.getItem(key);
+/**
+ * Check if we're running in a secure context (HTTPS)
+ */
+export const isSecureContext = (): boolean => {
+  if (!isBrowser()) {
+    return false;
   }
-  return null;
+  
+  return globalThis.location?.protocol === 'https:';
+};
+
+/**
+ * Safely access browser's local storage
+ */
+export const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (!isBrowser()) {
+      return null;
+    }
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.error(`Error accessing localStorage for key ${key}:`, error);
+      return null;
+    }
+  },
+  
+  setItem: (key: string, value: string): void => {
+    if (!isBrowser()) {
+      return;
+    }
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`Error setting localStorage for key ${key}:`, error);
+    }
+  },
+  
+  removeItem: (key: string): void => {
+    if (!isBrowser()) {
+      return;
+    }
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing localStorage for key ${key}:`, error);
+    }
+  }
 };
