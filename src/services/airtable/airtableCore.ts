@@ -6,8 +6,8 @@ export const PROPERTY_TABLE_NAME = 'Property Management System Listings';
 export const AGENT_TABLE_NAME = 'Agents';
 
 // Hardcoded Airtable credentials
-const HARDCODED_API_KEY = 'your_airtable_api_key_here';
-const HARDCODED_BASE_ID = 'your_airtable_base_id_here';
+const HARDCODED_API_KEY = 'patAGsXedkQ6H47U1.ab0037fa9de52f3adf981eb39379e24d16900e2ad1c03358cd2e80e04237b9f4';
+const HARDCODED_BASE_ID = 'appH7qo4cb2dorb8X';
 
 // Get API token and base ID from localStorage or environment variables or use hardcoded values
 export const getApiKey = () => {
