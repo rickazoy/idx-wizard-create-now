@@ -13,6 +13,10 @@ export const initConfigFromUrl = () => {
     if (!isBrowser()) return;
     
     // Now we can safely use the window object
+    if (typeof window === 'undefined' || !window.location) {
+      return;
+    }
+    
     const url = new URL(window.location.href);
     const params = url.searchParams;
     
@@ -88,7 +92,7 @@ export const initConfigFromUrl = () => {
       toast.success('Configuration updated from URL parameters');
       
       // Force reload to apply new settings
-      if (!params.has('no_reload') && isBrowser()) {
+      if (!params.has('no_reload') && isBrowser() && typeof window !== 'undefined') {
         // Safely use location when we know we're in a browser
         window.location.href = window.location.origin + window.location.pathname;
       }

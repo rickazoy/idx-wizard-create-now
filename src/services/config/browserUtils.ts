@@ -3,7 +3,7 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Safe browser environment detection with proper TypeScript handling
+// TypeScript-safe browser environment detection
 const isBrowserEnv = (): boolean => {
   return typeof window !== 'undefined' && 
     typeof document !== 'undefined' && 
@@ -27,7 +27,10 @@ export const getCurrentUrl = (): URL | null => {
   
   try {
     // Safe access to window.location
-    return new URL(window.location.href);
+    if (typeof window !== 'undefined' && window.location) {
+      return new URL(window.location.href);
+    }
+    return null;
   } catch (error) {
     console.error('Error parsing current URL:', error);
     return null;
@@ -43,7 +46,10 @@ export const isSecureContext = (): boolean => {
   }
   
   // Safe access to window.location
-  return window.location.protocol === 'https:';
+  if (typeof window !== 'undefined' && window.location) {
+    return window.location.protocol === 'https:';
+  }
+  return false;
 };
 
 /**
