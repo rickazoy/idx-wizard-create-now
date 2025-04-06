@@ -5,15 +5,19 @@ import Airtable from 'airtable';
 export const PROPERTY_TABLE_NAME = 'Property Management System Listings';
 export const AGENT_TABLE_NAME = 'Agents';
 
-// Get API token and base ID from localStorage or environment variables
+// Hardcoded Airtable credentials
+const HARDCODED_API_KEY = 'your_airtable_api_key_here';
+const HARDCODED_BASE_ID = 'your_airtable_base_id_here';
+
+// Get API token and base ID from localStorage or environment variables or use hardcoded values
 export const getApiKey = () => {
-  const key = localStorage.getItem('airtable_api_key') || '';
+  const key = localStorage.getItem('airtable_api_key') || HARDCODED_API_KEY;
   console.log('Retrieved API key:', key ? 'Key exists' : 'No key found');
   return key;
 };
 
 export const getBaseId = () => {
-  const baseId = localStorage.getItem('airtable_base_id') || '';
+  const baseId = localStorage.getItem('airtable_base_id') || HARDCODED_BASE_ID;
   console.log('Retrieved Base ID:', baseId || 'No base ID found');
   return baseId;
 };

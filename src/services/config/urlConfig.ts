@@ -48,7 +48,7 @@ export const initConfigFromUrl = () => {
       setConfigValue('idx_ancillary_key', idxAncillaryKey);
     }
     
-    // Check for Airtable parameters
+    // Check for Airtable parameters - these will override hardcoded values if provided
     const airtableApiKey = params.get('airtable_api_key');
     const airtableBaseId = params.get('airtable_base_id');
     const airtableAgentFilter = params.get('airtable_agent_filter');

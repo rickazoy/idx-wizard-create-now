@@ -10,10 +10,8 @@ interface SetupAirtablePromptProps {
 }
 
 const SetupAirtablePrompt: React.FC<SetupAirtablePromptProps> = ({ className }) => {
-  // Check for both keys and make sure they're non-empty strings
-  const apiKey = localStorage.getItem('airtable_api_key') || '';
-  const baseId = localStorage.getItem('airtable_base_id') || '';
-  const isConfigured = apiKey.length > 0 && baseId.length > 0;
+  // Using hardcoded values so we always consider Airtable configured
+  const isConfigured = true;
   
   if (isConfigured) return null;
   
