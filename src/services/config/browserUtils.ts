@@ -3,31 +3,7 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Define global types for browser environment
-declare global {
-  interface Window {
-    location: Location;
-  }
-
-  // Use DOM lib types instead of redefining Location
-  // interface Location {
-  //   href: string;
-  //   protocol: string;
-  //   origin: string;
-  //   pathname: string;
-  // }
-
-  // No need to re-declare Document
-  // interface Document {}
-
-  // No need to re-declare Storage
-  // interface Storage {
-  //   getItem(key: string): string | null;
-  //   setItem(key: string, value: string): void;
-  //   removeItem(key: string): void;
-  // }
-}
-
+// Explicitly check for browser environment once
 const isBrowserEnv = typeof window !== 'undefined' && 
   typeof document !== 'undefined' && 
   typeof localStorage !== 'undefined';
