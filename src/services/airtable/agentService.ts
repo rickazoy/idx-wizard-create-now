@@ -9,7 +9,7 @@ export interface Agent {
   bio: string;
   photo?: string;
   logo?: string;
-  idx?: string; // Added IDX field
+  idx?: string;
 }
 
 // Fetch all listing agents from Airtable
@@ -89,7 +89,7 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
         bio: fields['Agent Bio'] as string || 'A seasoned real estate agent specializing in luxury properties.',
         photo: photoUrl,
         logo: logoUrl,
-        idx: fields['IDX'] as string || '' // Add IDX field extraction
+        idx: fields['IDX'] as string || ''
       };
       
       console.log('Agent data fetched successfully:', {
@@ -98,7 +98,7 @@ export const getPrimaryAgent = async (): Promise<Agent | null> => {
         bioLength: agent.bio?.length || 0,
         hasPhoto: !!agent.photo,
         hasLogo: !!agent.logo,
-        hasIdx: !!agent.idx // Log IDX status
+        hasIdx: !!agent.idx
       });
       
       return agent;
@@ -147,23 +147,25 @@ export const updateAgent = async (agent: Omit<Agent, 'id'>): Promise<boolean> =>
       const fields: Record<string, any> = {
         'Agent Name': agent.name,
         'Agent Bio': agent.bio,
-        'IDX': agent.idx || '' // Add IDX field to update
+        'IDX': agent.idx || ''
       };
 
       // Only include photo if it's a valid URL
-      if (agent.photo && (agent.photo.startsWith('http') || agent.photo.startsWith('blob:'))) {
-        // For blob URLs, we can't directly save them to Airtable
-        // Just log this for now
-        if (agent.photo.startsWith('blob:')) {
-          console.log('Blob URLs cannot be saved directly to Airtable:', agent.photo);
-          // You would need to convert the blob to a file and upload it
-        } else {
-          fields['Agent Photo'] = [
-            {
-              url: agent.photo
-            }
-          ];
-        }
+      if (agent.photo && (agent.photo.startsWith('http') || agent.photo.startsWith('https'))) {
+        fields['Agent Photo'] = [
+          {
+            url: agent.photo
+          }
+        ];
+      }
+      
+      // Only include logo if it's a valid URL
+      if (agent.logo && (agent.logo.startsWith('http') || agent.logo.startsWith('https'))) {
+        fields['Agent Logo'] = [
+          {
+            url: agent.logo
+          }
+        ];
       }
       
       let result;

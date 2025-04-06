@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { getConfigValue, setConfigValue } from '@/services/config';
 import { saveAirtableConfig } from '@/services/airtable/airtableCore';
+import { fetchListingAgents } from '@/services/airtable/agentService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AirtableSettings = () => {
   const [apiKey, setApiKey] = useState('');
@@ -14,6 +16,7 @@ const AirtableSettings = () => {
   const [agentFilter, setAgentFilter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [agents, setAgents] = useState<string[]>([]);
   
   useEffect(() => {
     const loadSettings = async () => {
@@ -32,6 +35,11 @@ const AirtableSettings = () => {
         if (storedApiKey) setApiKey(storedApiKey);
         if (storedBaseId) setBaseId(storedBaseId);
         if (storedAgentFilter) setAgentFilter(storedAgentFilter);
+        
+        // Load agents list if credentials exist
+        if (storedApiKey && storedBaseId) {
+          loadAgents(storedApiKey, storedBaseId);
+        }
       } catch (error) {
         console.error('Error loading Airtable settings:', error);
         toast({
@@ -47,6 +55,15 @@ const AirtableSettings = () => {
     loadSettings();
   }, []);
   
+  const loadAgents = async (apiKey: string, baseId: string) => {
+    try {
+      const agentsList = await fetchListingAgents(apiKey, baseId);
+      setAgents(agentsList);
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    }
+  };
+  
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -60,6 +77,9 @@ const AirtableSettings = () => {
       setConfigValue('airtable_api_key', apiKey);
       setConfigValue('airtable_base_id', baseId);
       setConfigValue('agent_filter', agentFilter);
+      
+      // Load agents after successful connection
+      await loadAgents(apiKey, baseId);
       
       toast({
         title: 'Success',
@@ -116,16 +136,24 @@ const AirtableSettings = () => {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="agent-filter">Agent Filter (Optional)</Label>
-          <Input
-            id="agent-filter"
-            value={agentFilter}
-            onChange={(e) => setAgentFilter(e.target.value)}
-            placeholder="Filter by agent name or ID"
-            disabled={isLoading}
-          />
+          <Label htmlFor="agent-filter">Agent Filter</Label>
+          <Select 
+            value={agentFilter} 
+            onValueChange={setAgentFilter}
+            disabled={isLoading || agents.length === 0}
+          >
+            <SelectTrigger id="agent-filter" className="w-full">
+              <SelectValue placeholder={agents.length ? "Select an agent" : "Connect to Airtable first"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              {agents.map((agent) => (
+                <SelectItem key={agent} value={agent}>{agent}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <p className="text-sm text-muted-foreground">
-            Only show properties from a specific agent
+            Filter properties by agent (requires connection to Airtable)
           </p>
         </div>
       </CardContent>

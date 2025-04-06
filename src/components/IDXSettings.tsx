@@ -5,8 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import { getConfigValue, setConfigValue } from '@/services/configService';
+import { getConfigValue, setConfigValue } from '@/services/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getBase } from '@/services/airtable/airtableCore';
+
+interface ApiVersion {
+  id: string;
+  version: string;
+}
 
 const IDXSettings = () => {
   const [apiKey, setApiKey] = useState('');
@@ -15,6 +21,7 @@ const IDXSettings = () => {
   const [ancillaryKey, setAncillaryKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [apiVersions, setApiVersions] = useState<ApiVersion[]>([]);
   
   useEffect(() => {
     const loadSettings = async () => {
@@ -30,6 +37,9 @@ const IDXSettings = () => {
         setOutputType(storedOutputType || '');
         setApiVersion(storedApiVersion || '');
         setAncillaryKey(storedAncillaryKey || '');
+        
+        // Load API versions from Airtable
+        await loadApiVersions();
       } catch (error) {
         console.error('Error loading IDX settings:', error);
         toast({
@@ -44,6 +54,41 @@ const IDXSettings = () => {
     
     loadSettings();
   }, []);
+  
+  const loadApiVersions = async () => {
+    try {
+      const base = getBase();
+      if (!base) {
+        console.log('Airtable connection not available');
+        return;
+      }
+      
+      const records = await base('Agent Sites').select({
+        fields: ['API Version']
+      }).all();
+      
+      // Extract unique API versions
+      const versions = new Set<string>();
+      records.forEach(record => {
+        const version = record.get('API Version');
+        if (version && typeof version === 'string' && version.trim()) {
+          versions.add(version);
+        }
+      });
+      
+      // Convert to array of objects with id and version
+      const versionsList = Array.from(versions).map(version => ({
+        id: version.replace(/\./g, '-'),
+        version
+      }));
+      
+      setApiVersions(versionsList);
+      console.log('Loaded API versions:', versionsList);
+      
+    } catch (error) {
+      console.error('Error fetching API versions from Airtable:', error);
+    }
+  };
   
   const handleSave = async () => {
     setIsSaving(true);
@@ -112,13 +157,23 @@ const IDXSettings = () => {
         
         <div className="space-y-2">
           <Label htmlFor="api-version">API Version</Label>
-          <Input
-            id="api-version"
-            value={apiVersion}
-            onChange={(e) => setApiVersion(e.target.value)}
-            placeholder="e.g., 1.7.0"
-            disabled={isLoading}
-          />
+          <Select 
+            value={apiVersion} 
+            onValueChange={setApiVersion}
+            disabled={isLoading || apiVersions.length === 0}
+          >
+            <SelectTrigger id="api-version">
+              <SelectValue placeholder={apiVersions.length ? "Select API version" : "Connect to Airtable first"} />
+            </SelectTrigger>
+            <SelectContent>
+              {apiVersions.map((version) => (
+                <SelectItem key={version.id} value={version.version}>{version.version}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            API versions are loaded from your Airtable 'Agent Sites' table
+          </p>
         </div>
         
         <div className="space-y-2">
