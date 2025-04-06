@@ -4,11 +4,9 @@
 /// <reference lib="dom.iterable" />
 /// <reference lib="es2020" />
 
-// Add type declarations to make TypeScript happy when using globalThis
-interface GlobalThis {
-  window: Window & typeof globalThis;
-  document: Document;
-  localStorage: Storage;
+// Extend the GlobalThis interface to include browser globals
+declare global {
+  interface Window extends globalThis {}
 }
 
 // Ensure the file is treated as a module
