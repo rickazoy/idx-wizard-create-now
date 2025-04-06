@@ -1,10 +1,12 @@
 
+import { ConfigSettings, setConfigValue } from './configService';
+
 // API key stored in localStorage (for demo purposes)
 // In production, this should be stored securely
 const API_KEY_STORAGE_KEY = 'lovable_api_key';
 
 // Check if we're in a browser environment - defined safely for SSR
-const isBrowser = typeof globalThis !== 'undefined' && typeof globalThis.document !== 'undefined';
+const isBrowser = typeof globalThis !== 'undefined' && !!globalThis.document;
 
 /**
  * Check if the provided API key is valid
