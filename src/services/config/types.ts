@@ -21,4 +21,13 @@ export interface ConfigSettings {
   agent_phone?: string;
   agent_email?: string;
   agent_license?: string;
+  // Email configuration
+  smtp_host?: string;
+  smtp_port?: string;
+  smtp_user?: string;
+  smtp_password?: string;
+  smtp_from_email?: string;
+  smtp_from_name?: string;
+  smtp_secure?: string;
+  contact_form_recipients?: string;
 }

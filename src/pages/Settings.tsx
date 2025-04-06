@@ -7,6 +7,7 @@ import IDXSettings from '@/components/IDXSettings';
 import AirtableSettings from '@/components/AirtableSettings';
 import AgentSettings from '@/components/AgentSettings';
 import ApiIntegrationGuide from '@/components/ApiIntegrationGuide';
+import EmailSettings from '@/components/EmailSettings';
 
 // Settings page component
 const Settings = ({ initialTab }: { initialTab?: string }) => {
@@ -36,6 +37,7 @@ const Settings = ({ initialTab }: { initialTab?: string }) => {
             <TabsTrigger value="idx">IDX</TabsTrigger>
             <TabsTrigger value="airtable">Airtable</TabsTrigger>
             <TabsTrigger value="agent">Agent</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
             <TabsTrigger value="api">API</TabsTrigger>
           </TabsList>
           
@@ -49,6 +51,10 @@ const Settings = ({ initialTab }: { initialTab?: string }) => {
           
           <TabsContent value="agent" className="space-y-6">
             <AgentSettings />
+          </TabsContent>
+          
+          <TabsContent value="email" className="space-y-6">
+            <EmailSettings />
           </TabsContent>
           
           <TabsContent value="api" className="space-y-6">

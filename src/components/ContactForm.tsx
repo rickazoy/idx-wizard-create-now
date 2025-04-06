@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { sendEmail, getContactFormRecipients } from '@/services/emailService';
 
 interface ContactFormProps {
   propertyId?: string;
@@ -32,25 +33,64 @@ const ContactForm: React.FC<ContactFormProps> = ({ propertyId, propertyAddress }
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      toast.success('Your message has been sent!');
-      setIsSubmitting(false);
+    try {
+      const recipients = getContactFormRecipients();
       
-      // Reset form except for property address if it exists
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        message: propertyAddress 
-          ? `I am interested in ${propertyAddress}.` 
-          : 'I would like more information about properties in this area.',
+      if (recipients.length === 0) {
+        toast.error('No recipient emails configured. Please set up contact form recipients in Settings > Email');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Format the email content
+      const subject = propertyId 
+        ? `Property Inquiry: ${propertyAddress || propertyId}`
+        : 'New Contact Form Submission';
+        
+      const body = `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${formData.name}</p>
+        <p><strong>Email:</strong> ${formData.email}</p>
+        <p><strong>Phone:</strong> ${formData.phone || 'Not provided'}</p>
+        <p><strong>Message:</strong></p>
+        <p>${formData.message}</p>
+        ${propertyId ? `<p><strong>Property ID:</strong> ${propertyId}</p>` : ''}
+        ${propertyAddress ? `<p><strong>Property Address:</strong> ${propertyAddress}</p>` : ''}
+        <hr>
+        <p><small>This email was sent from the contact form on your website.</small></p>
+      `.trim().replace(/\n\s+/g, '\n');
+      
+      const emailSent = await sendEmail({
+        to: recipients,
+        subject,
+        body,
+        replyTo: formData.email
       });
-    }, 1000);
+      
+      if (emailSent) {
+        toast.success('Your message has been sent!');
+        // Reset form except for property address if it exists
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          message: propertyAddress 
+            ? `I am interested in ${propertyAddress}.` 
+            : 'I would like more information about properties in this area.',
+        });
+      } else {
+        toast.error('Failed to send message. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      toast.error('Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
