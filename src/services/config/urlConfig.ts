@@ -13,7 +13,7 @@ export const initConfigFromUrl = () => {
     if (!isBrowser()) return;
     
     // Now we can safely use the window object
-    const url = new URL(window.location.href);
+    const url = new URL((window as Window).location.href);
     const params = url.searchParams;
     
     // Store tenantId if provided
@@ -90,7 +90,7 @@ export const initConfigFromUrl = () => {
       // Force reload to apply new settings
       if (!params.has('no_reload') && isBrowser()) {
         // Only use location when we're sure we're in a browser
-        window.location.href = window.location.origin + window.location.pathname;
+        (window as Window).location.href = (window as Window).location.origin + (window as Window).location.pathname;
       }
     }
   } catch (error) {
