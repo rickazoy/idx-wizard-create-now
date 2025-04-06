@@ -4,11 +4,12 @@
 /// <reference lib="dom.iterable" />
 /// <reference lib="es2020" />
 
-// These interfaces and declarations help TypeScript understand browser globals
-declare interface Window {
+// Declaration merging to augment existing Window interface
+interface Window {
   location: Location;
 }
 
+// Make sure TypeScript knows about the global objects
 declare var window: Window & typeof globalThis;
 declare var document: Document;
 declare var localStorage: Storage;

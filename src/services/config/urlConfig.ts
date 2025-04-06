@@ -89,7 +89,7 @@ export const initConfigFromUrl = () => {
       
       // Force reload to apply new settings
       if (!params.has('no_reload') && isBrowser()) {
-        // Safely use location when we know we're in a browser
+        // Only use location when we're sure we're in a browser
         window.location.href = window.location.origin + window.location.pathname;
       }
     }

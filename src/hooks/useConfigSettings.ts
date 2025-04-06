@@ -20,7 +20,15 @@ export type ConfigKey =
   | 'agent_photo'
   | 'agent_phone'
   | 'agent_email'
-  | 'agent_license';
+  | 'agent_license'
+  | 'smtp_host'
+  | 'smtp_port'
+  | 'smtp_user'
+  | 'smtp_password'
+  | 'smtp_from_email'
+  | 'smtp_from_name'
+  | 'smtp_secure'
+  | 'contact_form_recipients';
 
 export function useConfigSetting(key: ConfigKey) {
   const [value, setValue] = useState<string | null>(null);
