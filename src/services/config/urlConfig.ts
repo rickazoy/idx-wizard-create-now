@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { isBrowser } from './browserUtils';
 import { setConfigValue } from './configStorage';
 
-// We can rely on the global declarations from browserUtils.ts
+// We rely on the global declarations from browserUtils.ts
 // No need to redeclare Window
 
 /**

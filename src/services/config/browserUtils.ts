@@ -3,9 +3,11 @@
  * Utility functions for browser environment detection and operations
  */
 
-// Correct type declarations for browser environment
+// Proper type declarations for browser environment
 declare global {
-  interface Window extends globalThis {}
+  interface Window {
+    location: Location;
+  }
 }
 
 /**
