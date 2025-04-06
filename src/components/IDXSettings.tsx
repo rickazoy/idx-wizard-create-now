@@ -20,18 +20,16 @@ const IDXSettings = () => {
     const loadSettings = async () => {
       setIsLoading(true);
       try {
-        const tenantId = localStorage.getItem('tenantId');
-        
         // Load settings from config service
-        const storedApiKey = await getConfigValue('idx_api_key', tenantId);
-        const storedOutputType = await getConfigValue('idx_output_type', tenantId);
-        const storedApiVersion = await getConfigValue('api_version', tenantId);
-        const storedAncillaryKey = await getConfigValue('ancillary_key', tenantId);
+        const storedApiKey = getConfigValue('idx_api_key');
+        const storedOutputType = getConfigValue('idx_output_type');
+        const storedApiVersion = getConfigValue('api_version');
+        const storedAncillaryKey = getConfigValue('ancillary_key');
         
-        setApiKey(storedApiKey);
-        setOutputType(storedOutputType);
-        setApiVersion(storedApiVersion);
-        setAncillaryKey(storedAncillaryKey);
+        setApiKey(storedApiKey || '');
+        setOutputType(storedOutputType || '');
+        setApiVersion(storedApiVersion || '');
+        setAncillaryKey(storedAncillaryKey || '');
       } catch (error) {
         console.error('Error loading IDX settings:', error);
         toast({
@@ -50,13 +48,11 @@ const IDXSettings = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const tenantId = localStorage.getItem('tenantId');
-      
       // Save settings to config service
-      await setConfigValue('idx_api_key', apiKey, tenantId);
-      await setConfigValue('idx_output_type', outputType, tenantId);
-      await setConfigValue('api_version', apiVersion, tenantId);
-      await setConfigValue('ancillary_key', ancillaryKey, tenantId);
+      setConfigValue('idx_api_key', apiKey);
+      setConfigValue('idx_output_type', outputType);
+      setConfigValue('api_version', apiVersion);
+      setConfigValue('ancillary_key', ancillaryKey);
       
       toast({
         title: 'Success',

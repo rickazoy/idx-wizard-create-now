@@ -19,16 +19,14 @@ const AgentSettings = () => {
     const loadSettings = async () => {
       setIsLoading(true);
       try {
-        const tenantId = localStorage.getItem('tenantId');
-        
         // Load settings from config service
-        const storedAgentName = await getConfigValue('agent_name', tenantId);
-        const storedAgentBio = await getConfigValue('agent_bio', tenantId);
-        const storedAgentPhoto = await getConfigValue('agent_photo', tenantId);
+        const storedAgentName = getConfigValue('agent_name');
+        const storedAgentBio = getConfigValue('agent_bio');
+        const storedAgentPhoto = getConfigValue('agent_photo');
         
-        setAgentName(storedAgentName);
-        setAgentBio(storedAgentBio);
-        setAgentPhoto(storedAgentPhoto);
+        setAgentName(storedAgentName || '');
+        setAgentBio(storedAgentBio || '');
+        setAgentPhoto(storedAgentPhoto || '');
       } catch (error) {
         console.error('Error loading agent settings:', error);
         toast({
@@ -47,12 +45,10 @@ const AgentSettings = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const tenantId = localStorage.getItem('tenantId');
-      
       // Save settings to config service
-      await setConfigValue('agent_name', agentName, tenantId);
-      await setConfigValue('agent_bio', agentBio, tenantId);
-      await setConfigValue('agent_photo', agentPhoto, tenantId);
+      setConfigValue('agent_name', agentName);
+      setConfigValue('agent_bio', agentBio);
+      setConfigValue('agent_photo', agentPhoto);
       
       toast({
         title: 'Success',

@@ -19,17 +19,15 @@ const AirtableSettings = () => {
     const loadSettings = async () => {
       setIsLoading(true);
       try {
-        const tenantId = localStorage.getItem('tenantId');
-        
         // Load settings from localStorage
         setApiKey(localStorage.getItem('airtable_api_key') || '');
         setBaseId(localStorage.getItem('airtable_base_id') || '');
         setAgentFilter(localStorage.getItem('airtable_agent_filter') || '');
         
         // Also check config service for tenant-specific settings
-        const storedApiKey = await getConfigValue('airtable_api_key', tenantId);
-        const storedBaseId = await getConfigValue('airtable_base_id', tenantId);
-        const storedAgentFilter = await getConfigValue('agent_filter', tenantId);
+        const storedApiKey = getConfigValue('airtable_api_key');
+        const storedBaseId = getConfigValue('airtable_base_id');
+        const storedAgentFilter = getConfigValue('agent_filter');
         
         if (storedApiKey) setApiKey(storedApiKey);
         if (storedBaseId) setBaseId(storedBaseId);
@@ -52,8 +50,6 @@ const AirtableSettings = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const tenantId = localStorage.getItem('tenantId');
-      
       // Test connection to Airtable
       await saveAirtableConfig(apiKey, baseId);
       
@@ -61,9 +57,9 @@ const AirtableSettings = () => {
       localStorage.setItem('airtable_agent_filter', agentFilter);
       
       // Also save to config service
-      await setConfigValue('airtable_api_key', apiKey, tenantId);
-      await setConfigValue('airtable_base_id', baseId, tenantId);
-      await setConfigValue('agent_filter', agentFilter, tenantId);
+      setConfigValue('airtable_api_key', apiKey);
+      setConfigValue('airtable_base_id', baseId);
+      setConfigValue('agent_filter', agentFilter);
       
       toast({
         title: 'Success',

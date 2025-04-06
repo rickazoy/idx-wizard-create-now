@@ -17,12 +17,9 @@ const SetupIDXPrompt: React.FC<SetupIDXPromptProps> = ({ className }) => {
   useEffect(() => {
     const checkConfiguration = async () => {
       try {
-        // Get tenant ID for Airtable config
-        const tenantId = localStorage.getItem('tenantId');
-        
         // Check if IDX API key exists in our config
-        const idxApiKey = await getConfigValue('idx_api_key', tenantId);
-        setIsConfigured(idxApiKey.length > 0);
+        const idxApiKey = getConfigValue('idx_api_key');
+        setIsConfigured(idxApiKey !== null && idxApiKey.length > 0);
       } catch (error) {
         console.error('Error checking IDX configuration:', error);
         setIsConfigured(false);

@@ -6,10 +6,20 @@ export interface ConfigSettings {
   idx_api_key?: string;
   idx_api_version?: string; 
   idx_ancillary_key?: string;
+  idx_output_type?: string;
+  api_version?: string;
+  ancillary_key?: string;
   airtable_api_key?: string;
   airtable_base_id?: string;
   airtable_agent_filter?: string;
+  agent_filter?: string;
   api_key?: string;
+  agent_name?: string;
+  agent_bio?: string;
+  agent_photo?: string;
+  agent_phone?: string;
+  agent_email?: string;
+  agent_license?: string;
 }
 
 /**
@@ -18,6 +28,8 @@ export interface ConfigSettings {
  */
 export const initConfigFromUrl = () => {
   try {
+    if (typeof window === 'undefined') return;
+    
     const url = new URL(window.location.href);
     const params = url.searchParams;
     
@@ -97,16 +109,19 @@ export const initConfigFromUrl = () => {
 
 // Get a configuration value
 export const getConfigValue = (key: keyof ConfigSettings): string | null => {
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(key) || null;
 };
 
 // Set a configuration value
 export const setConfigValue = (key: keyof ConfigSettings, value: string): void => {
+  if (typeof window === 'undefined') return;
   localStorage.setItem(key, value);
 };
 
 // Clear a configuration value
 export const clearConfigValue = (key: keyof ConfigSettings): void => {
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(key);
 };
 
@@ -128,18 +143,18 @@ export const isAirtableConfigured = (): boolean => {
 // Export configuration as JSON
 export const exportConfig = (): ConfigSettings => {
   return {
-    idx_api_key: getConfigValue('idx_api_key'),
-    idx_api_version: getConfigValue('idx_api_version'),
-    idx_ancillary_key: getConfigValue('idx_ancillary_key'),
-    airtable_api_key: getConfigValue('airtable_api_key'),
-    airtable_base_id: getConfigValue('airtable_base_id'),
-    airtable_agent_filter: getConfigValue('airtable_agent_filter'),
-    api_key: getConfigValue('api_key')
+    idx_api_key: getConfigValue('idx_api_key') || undefined,
+    idx_api_version: getConfigValue('idx_api_version') || undefined,
+    idx_ancillary_key: getConfigValue('idx_ancillary_key') || undefined,
+    airtable_api_key: getConfigValue('airtable_api_key') || undefined,
+    airtable_base_id: getConfigValue('airtable_base_id') || undefined,
+    airtable_agent_filter: getConfigValue('airtable_agent_filter') || undefined,
+    api_key: getConfigValue('api_key') || undefined
   };
 };
 
 // Import configuration from JSON
-export const importConfig = (config: ConfigSettings): void => {
+export const importConfig = (config: Partial<ConfigSettings>): void => {
   try {
     if (config.idx_api_key) setConfigValue('idx_api_key', config.idx_api_key);
     if (config.idx_api_version) setConfigValue('idx_api_version', config.idx_api_version);
@@ -205,7 +220,7 @@ export const handleConfigApiRequest = async (req: Request): Promise<Response> =>
     try {
       // Update configuration with the provided values
       const body = await req.json();
-      importConfig(body);
+      importConfig(body as Partial<ConfigSettings>);
       
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

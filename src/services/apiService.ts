@@ -36,8 +36,7 @@ export const getApiKey = (): string => {
  */
 export const processConfigUpdate = async (
   data: Partial<ConfigSettings>, 
-  apiKey: string,
-  tenantId?: string
+  apiKey: string
 ): Promise<{ success: boolean; message: string }> => {
   // Validate the API key
   if (!validateApiKey(apiKey)) {
@@ -53,7 +52,7 @@ export const processConfigUpdate = async (
       if (value !== undefined && value !== null) {
         // Make sure key is a valid ConfigSettings key
         const configKey = key as keyof ConfigSettings;
-        await setConfigValue(configKey, String(value), tenantId);
+        setConfigValue(configKey, String(value));
       }
     }
     

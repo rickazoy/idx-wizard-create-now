@@ -2,13 +2,18 @@
 import { useState, useEffect } from 'react';
 import { getConfigValue, setConfigValue } from '@/services/configService';
 
+// Update the ConfigKey type to match exactly what's in configService.ts
 export type ConfigKey = 
   | 'idx_api_key' 
   | 'idx_api_version' 
   | 'idx_ancillary_key'
+  | 'idx_output_type'
+  | 'api_version'
+  | 'ancillary_key'
   | 'airtable_api_key' 
   | 'airtable_base_id' 
   | 'airtable_agent_filter'
+  | 'agent_filter'
   | 'api_key'
   | 'agent_name'
   | 'agent_bio'

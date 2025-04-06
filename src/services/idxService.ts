@@ -1,3 +1,4 @@
+
 import { Property } from '@/components/PropertyCard';
 import { getConfigValue } from './configService';
 
@@ -69,14 +70,11 @@ export const convertIDXToProperty = (idxProperty: IDXProperty): Property => {
 
 export const fetchIDXProperties = async (): Promise<Property[]> => {
   try {
-    // Get tenant ID for Airtable-based configuration
-    const tenantId = localStorage.getItem('tenantId');
-    
     // Get all IDX settings using our configService
-    const idxApiKey = await getConfigValue('idx_api_key', tenantId);
-    const idxApiOutputType = await getConfigValue('idx_output_type', tenantId) || 'json';
-    const idxApiVersion = await getConfigValue('idx_api_version', tenantId) || '1.2.2';
-    const idxAncillaryKey = await getConfigValue('idx_ancillary_key', tenantId);
+    const idxApiKey = getConfigValue('idx_api_key');
+    const idxApiOutputType = getConfigValue('idx_output_type') || 'json';
+    const idxApiVersion = getConfigValue('api_version') || '1.2.2';
+    const idxAncillaryKey = getConfigValue('ancillary_key');
     
     if (!idxApiKey) {
       console.log('No IDX API key found in configuration');
