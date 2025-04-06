@@ -1,6 +1,8 @@
 
 /// <reference types="vite/client" />
 /// <reference types="@types/node" />
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 
 // Explicitly inform TypeScript about DOM globals
 interface Window {
@@ -10,6 +12,12 @@ interface Window {
 }
 
 declare global {
+  interface Window {
+    location: Location;
+    localStorage: Storage;
+    document: Document;
+  }
+  
   const window: Window & typeof globalThis;
   const document: Document;
   const localStorage: Storage;
