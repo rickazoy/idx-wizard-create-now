@@ -20,7 +20,6 @@ import { getAgentLogo } from '@/services/airtable';
 const cities = ['Miami', 'Coral Gables', 'Doral', 'Miami Beach', 'Sunny Isles'];
 
 const NavigationBar: React.FC = () => {
-  const isAdmin = localStorage.getItem('is_admin') === 'true';
   const location = useLocation();
   
   const { data: logoUrl } = useQuery({
@@ -161,18 +160,23 @@ const NavigationBar: React.FC = () => {
                       <Link to="/team" className="px-2 py-1">Our Team</Link>
                     </div>
                   </div>
+                  
+                  {/* Add settings link to mobile menu */}
+                  <Link to="/settings" className="px-2 py-1 flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    <span>Settings</span>
+                  </Link>
                 </nav>
               </SheetContent>
             </Sheet>
           </div>
           
-          {isAdmin && (
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/settings" title="Settings">
-                <Settings className="h-5 w-5" />
-              </Link>
-            </Button>
-          )}
+          {/* Always show the settings button (login protection happens in the route) */}
+          <Button variant="ghost" size="icon" asChild className="ml-2">
+            <Link to="/settings" title="Settings">
+              <Settings className="h-5 w-5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </nav>
@@ -180,4 +184,3 @@ const NavigationBar: React.FC = () => {
 };
 
 export default NavigationBar;
-
