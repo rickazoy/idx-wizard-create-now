@@ -10,7 +10,7 @@ interface Window {
 }
 
 declare global {
-  const window: Window;
+  const window: Window & typeof globalThis;
   const document: Document;
   const localStorage: Storage;
 }
