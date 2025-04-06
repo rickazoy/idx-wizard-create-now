@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 /// <reference types="@types/node" />
 
-// This ensures TypeScript recognizes DOM types
+// Explicitly declare DOM types to resolve TypeScript errors
 interface Window {
   location: Location;
   localStorage: Storage;
