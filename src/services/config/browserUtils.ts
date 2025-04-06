@@ -9,8 +9,16 @@ declare global {
     location: Location;
   }
   
+  interface Location {
+    href: string;
+    protocol: string;
+    origin: string;
+    pathname: string;
+  }
+  
   interface Document {}
-  interface localStorage {
+  
+  interface Storage {
     getItem(key: string): string | null;
     setItem(key: string, value: string): void;
     removeItem(key: string): void;
