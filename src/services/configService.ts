@@ -22,6 +22,9 @@ export interface ConfigSettings {
   agent_license?: string;
 }
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 /**
  * Initialize configuration from URL parameters
  * This allows headless setup of the application via URL
@@ -29,7 +32,7 @@ export interface ConfigSettings {
 export const initConfigFromUrl = () => {
   try {
     // Check if we're in a browser environment
-    if (typeof window === 'undefined') return;
+    if (!isBrowser) return;
     
     const url = new URL(window.location.href);
     const params = url.searchParams;
@@ -101,7 +104,7 @@ export const initConfigFromUrl = () => {
       // Force reload to apply new settings
       if (!params.has('no_reload')) {
         // Check if we're in a browser environment
-        if (typeof window !== 'undefined') {
+        if (isBrowser) {
           window.location.href = window.location.origin + window.location.pathname;
         }
       }
@@ -113,19 +116,19 @@ export const initConfigFromUrl = () => {
 
 // Get a configuration value
 export const getConfigValue = (key: keyof ConfigSettings): string | null => {
-  if (typeof window === 'undefined') return null;
+  if (!isBrowser) return null;
   return localStorage.getItem(key) || null;
 };
 
 // Set a configuration value
 export const setConfigValue = (key: keyof ConfigSettings, value: string): void => {
-  if (typeof window === 'undefined') return;
+  if (!isBrowser) return;
   localStorage.setItem(key, value);
 };
 
 // Clear a configuration value
 export const clearConfigValue = (key: keyof ConfigSettings): void => {
-  if (typeof window === 'undefined') return;
+  if (!isBrowser) return;
   localStorage.removeItem(key);
 };
 
@@ -181,7 +184,7 @@ export const generateApiKey = (): string => {
   const length = 32;
   let result = '';
   
-  if (typeof window !== 'undefined') {
+  if (isBrowser) {
     const randomValues = new Uint8Array(length);
     window.crypto.getRandomValues(randomValues);
     
@@ -247,14 +250,14 @@ export const handleConfigApiRequest = async (req: Request): Promise<Response> =>
 
 // Save configuration to localStorage
 export const saveToLocalStorage = (key: string, value: string): void => {
-  if (typeof window !== 'undefined') {
+  if (isBrowser) {
     localStorage.setItem(key, value);
   }
 };
 
 // Get configuration from localStorage
 export const getFromLocalStorage = (key: string): string | null => {
-  if (typeof window !== 'undefined') {
+  if (isBrowser) {
     return localStorage.getItem(key);
   }
   return null;

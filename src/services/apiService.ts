@@ -5,11 +5,14 @@ import { ConfigSettings, setConfigValue } from './configService';
 // In production, this should be stored securely
 const API_KEY_STORAGE_KEY = 'lovable_api_key';
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 /**
  * Check if the provided API key is valid
  */
 export const validateApiKey = (providedApiKey: string): boolean => {
-  if (typeof window === 'undefined') return false;
+  if (!isBrowser) return false;
   
   const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
   
@@ -23,7 +26,7 @@ export const validateApiKey = (providedApiKey: string): boolean => {
  * Set or update the API key
  */
 export const setApiKey = (newApiKey: string): void => {
-  if (typeof window === 'undefined') return;
+  if (!isBrowser) return;
   localStorage.setItem(API_KEY_STORAGE_KEY, newApiKey);
 };
 
@@ -31,7 +34,7 @@ export const setApiKey = (newApiKey: string): void => {
  * Get the current API key
  */
 export const getApiKey = (): string => {
-  if (typeof window === 'undefined') return '';
+  if (!isBrowser) return '';
   return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
 };
 
